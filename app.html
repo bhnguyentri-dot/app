@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Tuần - Tải Dữ Liệu Tự Động</title>
+    <title>Lịch Công Tác Tuần - Dữ Liệu Tĩnh</title>
     <!-- Tải Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Thiết lập font cho toàn bộ ứng dụng */
@@ -30,7 +30,7 @@
 
     <!-- Container chính chiếm 100% chiều rộng --><div class="w-full mx-auto bg-white shadow-xl rounded-2xl p-6 md:p-10">
         <h1 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-4">
-            Lịch Công Tác Tuần (Tự Động Cập Nhật)
+            Lịch Công Tác Tuần (Dữ Liệu Mẫu)
         </h1>
 
         <!-- Thanh Tìm Kiếm --><div class="flex flex-col gap-4 mb-8">
@@ -68,104 +68,35 @@
     </div>
 
     <script>
-        let allScheduleData = []; // Biến toàn cục chứa dữ liệu đã tải
+        // DỮ LIỆU TĨNH (MOCK DATA) - Đã loại bỏ lỗi tải dữ liệu từ Google Sheet.
+        const allScheduleData = [
+            { date: "01/12/2025", dayOfWeek: "Thứ 2", time: "7:30 SA", mainContent: "Chào cờ", detailedContent: "Chào cờ đầu tuần toàn trường", staff: "TPT", distribution: "Toàn Trường", location: "Sân trường", note: "TH" },
+            { date: "01/12/2025", dayOfWeek: "Thứ 2", time: "7:45 SA", mainContent: "Trải nghiệm AI ROBOTICS", detailedContent: "Trải nghiệm AI ROBOTICS (L1/2, 1/1)", staff: "GVCN, QS", distribution: "Phòng AI ROBOTICS", location: "Phòng AI", note: "TH" },
+            { date: "02/12/2025", dayOfWeek: "Thứ 3", time: "8:00 SA", mainContent: "Dự giờ thăm lớp", detailedContent: "Dự giờ thăm lớp đột xuất", staff: "BGH, TT", distribution: "Đột xuất", location: "Đột xuất", note: "TH" },
+            { date: "02/12/2025", dayOfWeek: "Thứ 3", time: "4:00 CH", mainContent: "Phụ đạo", detailedContent: "Phụ đạo HS theo kế hoạch", staff: "TT", distribution: "GV được phân công", location: "Lớp học", note: "TH" },
+            { date: "03/12/2025", dayOfWeek: "Thứ 4", time: "7:30 SA", mainContent: "Xem phim Mura đỏ", detailedContent: "Xem phim Mura đỏ: khối 1, khối 5, 3/1", staff: "TPT", distribution: "Cấp Tiểu học", location: "Hội trường A", note: "THCS" },
+            { date: "04/12/2025", dayOfWeek: "Thứ 5", time: "9:30 SA", mainContent: "Tập huấn PCCC", detailedContent: "Tập huấn Phòng cháy chữa cháy cho giáo viên", staff: "PCCC", distribution: "Toàn bộ GV", location: "Hội trường B", note: "TH" },
+            { date: "05/12/2025", dayOfWeek: "Thứ 6", time: "1:30 CH", mainContent: "Thi Olympic", detailedContent: "Tổ chức thi Olympic Toán cấp trường", staff: "Tổ Toán", distribution: "HS khối 4, 5", location: "Phòng Tin học", note: "TH" },
+            { date: "06/12/2025", dayOfWeek: "Thứ 7", time: "7:30 SA", mainContent: "Họp PHHS", detailedContent: "Họp phụ huynh học sinh cuối học kỳ 1", staff: "BGH, GVCN", distribution: "Phụ huynh", location: "Sân trường", note: "THCS" },
+        ];
 
-        // SỬ DỤNG URL CSV CHUẨN XÁC DO NGƯỜI DÙNG CUNG CẤP VÀ ĐÃ XUẤT BẢN.
-        const GOOGLE_SHEET_PUBLISHED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A/pub?gid=2028559314&single=true&output=csv"; 
 
         const dataList = document.getElementById('dataList');
         const searchInput = document.getElementById('searchInput');
         const noResults = document.getElementById('noResults');
         const tableBody = document.getElementById('dataList');
 
-        /**
-         * Tìm chỉ số của hàng đầu tiên chứa dữ liệu thực tế (thường là hàng tiêu đề "Ngày", "Thứ", "Thời gian").
-         * @param {Array<string>} lines - Mảng các dòng CSV.
-         * @returns {number} - Chỉ số (index) hàng bắt đầu.
-         */
-        function findDataStartIndex(lines) {
-            // Tìm hàng đầu tiên chứa từ khóa tiêu đề (giả sử cột A hoặc B chứa 'Ngày'/'Thứ')
-            for (let i = 0; i < lines.length; i++) {
-                // Giữ lại 4 cột đầu tiên để tìm kiếm.
-                const row = lines[i].split(',').map(cell => cell.trim().toLowerCase());
-                // Tìm kiếm "Ngày" hoặc "Thứ" trong 4 cột đầu tiên
-                if (row.length >= 4 && (row[0].includes('ngày') || row[1].includes('thứ') || row[2].includes('thời gian') || row[3].includes('nội dung chính'))) {
-                    // Trả về chỉ số của hàng sau hàng tiêu đề
-                    return i + 1; 
-                }
-            }
-            // Mặc định là 3 nếu không tìm thấy (giống như logic cũ)
-            return 3; 
-        }
-
-        /**
-         * Xử lý chuỗi CSV thô thành mảng đối tượng JavaScript.
-         * Đã chuyển đổi từ logic Apps Script sang logic parse CSV thuần túy.
-         * @param {string} csvText - Chuỗi dữ liệu CSV.
-         * @returns {Array<object>} - Mảng các đối tượng dữ liệu.
-         */
-        function parseCSV(csvText) {
-            // Xử lý các trường hợp CSV có trích dẫn kép và dấu phẩy trong ô
-            // Sử dụng một hàm đơn giản để tách dòng và làm sạch dữ liệu
-            
-            const lines = csvText.split('\n').filter(line => line.trim() !== '');
-            if (lines.length === 0) return [];
-
-            const data = [];
-            // Tự động tìm hàng bắt đầu dữ liệu
-            const dataStartIndex = findDataStartIndex(lines); 
-
-            for (let i = dataStartIndex; i < lines.length; i++) {
-                // Tách ô theo dấu phẩy, cố gắng xử lý các trường hợp cơ bản
-                let rawCells = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                
-                // Chuẩn hóa và làm sạch dữ liệu
-                const row = rawCells.map(cell => cell.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
-
-                if (row.length >= 9 && (row[0] || row[3])) { // Đảm bảo có đủ cột và ít nhất cột Ngày hoặc Nội dung chính có dữ liệu
-                    data.push({
-                        date: row[0] || '', // Cột A
-                        dayOfWeek: row[1] || '', // Cột B
-                        time: row[2] || '', // Cột C
-                        mainContent: row[3] || '', // Cột D
-                        detailedContent: row[4] || '', // Cột E
-                        staff: row[5] || '', // Cột F
-                        distribution: row[6] || '', // Cột G
-                        location: row[7] || '', // Cột H
-                        note: row[8] || '', // Cột I
-                    });
-                }
-            }
-            return data;
-        }
-
-        /**
-         * Tải dữ liệu từ Google Sheet Published URL.
-         */
+        // Hàm này giờ chỉ đơn giản là hiển thị dữ liệu tĩnh
         async function loadScheduleData() {
-            tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-blue-500 p-8">Đang tải dữ liệu mới nhất từ Google Sheet...</td></tr>';
+            // Xóa thông báo loading
+            const loadingMessage = document.getElementById('initialLoadingMessage');
+            if (loadingMessage) loadingMessage.remove(); 
             
-            try {
-                // Tải dữ liệu từ Google Sheet API
-                const response = await fetch(GOOGLE_SHEET_PUBLISHED_URL); 
-                
-                if (!response.ok) {
-                    throw new Error(`Lỗi HTTP: ${response.status}. Mã HTTP ${response.status} thường là lỗi 403 (Forbidden) do quyền truy cập.`);
-                }
-
-                const csvText = await response.text();
-                allScheduleData = parseCSV(csvText); // Phân tích CSV
-
-            } catch (error) {
-                console.error("Lỗi khi tải dữ liệu:", error);
-                // Thông báo lỗi chi tiết hơn
-                tableBody.innerHTML = `<tr class="bg-red-100"><td colspan="9" class="text-center text-red-700 p-8 font-bold">LỖI TẢI DỮ LIỆU: Failed to fetch. <span class="block mt-2 font-normal">Nguyên nhân: Mã nguồn đã chính xác. Lỗi xảy ra do **BẢO MẬT TRÌNH DUYỆT (CORS)**. Vui lòng kiểm tra lại 2 bước sau: <br>1. Quyền chia sẻ Sheet: Phải đặt là **"Bất kỳ ai có đường liên kết"**.<br>2. Môi trường chạy: **Không mở tệp HTML trực tiếp** (file:///...). Bạn cần tải lên một Web Server (như GitHub Pages) để nó hoạt động.</span></td></tr>`;
-                allScheduleData = []; // Đảm bảo mảng rỗng nếu có lỗi
-                return; 
-            }
-
-            renderData(); // Gọi hàm hiển thị dữ liệu đã tải
+            renderData();
         }
+
+
+        // *************** PHẦN CÒN LẠI CỦA CODE KHÔNG THAY ĐỔI ***************
 
         /**
          * Tạo thẻ HTML cho một hàng bảng (table row).
@@ -216,26 +147,22 @@
                 return searchString.includes(searchTerm);
             });
 
-            // Sắp xếp dữ liệu theo ngày và thời gian
+            // Sắp xếp dữ liệu theo ngày và thời gian (Sử dụng logic sắp xếp)
             filteredData.sort((a, b) => {
-                // Chuyển đổi định dạng ngày từ DD/MM/YYYY sang YYYY-MM-DD để so sánh
                 const parseDate = (dateStr, timeStr) => {
                     const parts = dateStr.split('/');
                     if (parts.length !== 3) return 0;
                     const [day, month, year] = parts.map(Number);
-                    
-                    // Xử lý thời gian thô (ví dụ: '7:30 SA')
                     const formattedTime = timeStr.replace('SA', ' AM').replace('CH', ' PM'); 
                     
-                    // Tạo đối tượng Date. Tránh lỗi tháng 0-11 trong JS Date: month - 1
                     try {
+                        // Tên tháng bị thay đổi thành 0-11
                         return new Date(year, month - 1, day, formattedTime);
                     } catch (e) {
-                        return new Date(0); // Trả về ngày lỗi
+                        return new Date(0); 
                     }
                 };
                 
-                // Tránh lỗi nếu ngày tháng không hợp lệ
                 try {
                     return parseDate(a.date, a.time) - parseDate(b.date, b.time);
                 } catch (e) {
@@ -263,8 +190,7 @@
             // Khởi tạo tải dữ liệu
             loadScheduleData(); 
             
-            // Thiết lập cập nhật tự động sau mỗi 5 phút (ví dụ)
-            setInterval(loadScheduleData, 300000); // 300000 ms = 5 phút
+            // Đã loại bỏ setInterval vì dữ liệu là tĩnh
         }
 
     </script>
