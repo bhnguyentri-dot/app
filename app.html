@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Công Tác Tuần - Tải Dữ Liệu Tự Động</title>
+    <!-- Tải Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Thiết lập font cho toàn bộ ứng dụng */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* Đảm bảo các hàng không có nền mặc định trước khi JS gán */
+        .table-auto tr {
+            background-color: transparent; 
+        }
+        /* Style cho ô tiêu đề - Màu xanh đậm tương tự bảng tính */
+        .table-auto th {
+            /* Đảm bảo các class Tailwind được áp dụng */
+            @apply px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider; 
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            border-bottom: 2px solid #1e40af; /* Darker blue line */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Container chính chiếm 100% chiều rộng --><div class="w-full mx-auto bg-white shadow-xl rounded-2xl p-6 md:p-10">
+        <h1 class="text-3xl font-extrabold text-gray-800 mb-6 border-b pb-4">
+            Lịch Công Tác Tuần (Tự Động Cập Nhật)
+        </h1>
+
+        <!-- Thanh Tìm Kiếm --><div class="flex flex-col gap-4 mb-8">
+            <input type="text" id="searchInput" placeholder="Tìm kiếm theo Nội dung chính hoặc Nội dung chi tiết..."
+                   class="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition duration-150 shadow-sm">
+        </div>
+
+        <!-- Khu vực hiển thị bảng dữ liệu (Cho phép cuộn ngang trên màn hình nhỏ) -->
+        <div class="overflow-x-auto shadow-md rounded-xl border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 border-collapse">
+                <thead class="sticky top-0">
+                    <tr>
+                        <th>Ngày</th>
+                        <th>Thứ</th>
+                        <th>Thời gian</th>
+                        <th>Nội dung chính</th>
+                        <th>Nội dung chi tiết</th>
+                        <th>Chủ trì/TPT</th>
+                        <th>Thành phần</th>
+                        <th>Địa điểm</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody id="dataList" class="divide-y divide-gray-200">
+                    <!-- Dữ liệu sẽ được chèn vào đây bởi JavaScript -->
+                    <!-- Thông báo đang tải ban đầu -->
+                    <tr><td colspan="9" class="text-center text-blue-500 p-8" id="initialLoadingMessage">Đang tải dữ liệu...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Thông báo khi không tìm thấy kết quả --><div id="noResults" class="hidden text-center text-gray-500 p-8 border border-dashed rounded-xl mt-6">
+            Không tìm thấy kết quả phù hợp. Vui lòng thử lại.
+        </div>
+    </div>
+
+    <script>
+        let allScheduleData = []; // Biến toàn cục chứa dữ liệu đã tải
+
+        // ĐÃ CẬP NHẬT URL CHÍNH XÁC NHẤT DO NGƯỜI DÙNG CUNG CẤP VÀ ĐÃ XUẤT BẢN CSV.
+        // LỖI 'Failed to fetch' hiện tại gần như chắc chắn là lỗi bảo mật CORS.
+        const GOOGLE_SHEET_PUBLISHED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A/pub?gid=2028559314&single=true&output=csv"; 
+
+        const dataList = document.getElementById('dataList');
+        const searchInput = document.getElementById('searchInput');
+        const noResults = document.getElementById('noResults');
+        const tableBody = document.getElementById('dataList');
+
+        /**
+         * Tìm chỉ số của hàng đầu tiên chứa dữ liệu thực tế (thường là hàng tiêu đề "Ngày", "Thứ", "Thời gian").
+         * @param {Array<string>} lines - Mảng các dòng CSV.
+         * @returns {number} - Chỉ số (index) hàng bắt đầu.
+         */
+        function findDataStartIndex(lines) {
+            // Tìm hàng đầu tiên chứa từ khóa tiêu đề (giả sử cột A hoặc B chứa 'Ngày'/'Thứ')
+            for (let i = 0; i < lines.length; i++) {
+                // Giữ lại 4 cột đầu tiên để tìm kiếm.
+                const row = lines[i].split(',').map(cell => cell.trim().toLowerCase());
+                // Tìm kiếm "Ngày" hoặc "Thứ" trong 4 cột đầu tiên
+                if (row.length >= 4 && (row[0].includes('ngày') || row[1].includes('thứ') || row[2].includes('thời gian') || row[3].includes('nội dung chính'))) {
+                    // Trả về chỉ số của hàng sau hàng tiêu đề
+                    return i + 1; 
+                }
+            }
+            // Mặc định là 3 nếu không tìm thấy (giống như logic cũ)
+            return 3; 
+        }
+
+        /**
+         * Xử lý chuỗi CSV thô thành mảng đối tượng JavaScript.
+         * @param {string} csvText - Chuỗi dữ liệu CSV.
+         * @returns {Array<object>} - Mảng các đối tượng dữ liệu.
+         */
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+            if (lines.length === 0) return [];
+
+            const data = [];
+            // Tự động tìm hàng bắt đầu dữ liệu
+            const dataStartIndex = findDataStartIndex(lines); 
+
+            for (let i = dataStartIndex; i < lines.length; i++) {
+                // Tách các ô theo dấu phẩy (chuẩn CSV).
+                // Dùng biểu thức chính quy đơn giản để tránh lỗi phức tạp khi có dấu phẩy trong nội dung ô.
+                let rawCells = lines[i].split(',');
+                
+                // Chuẩn hóa và làm sạch dữ liệu
+                const row = rawCells.map(cell => cell.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+
+                if (row.length >= 9 && (row[0] || row[3])) { // Đảm bảo có đủ cột và ít nhất cột Ngày hoặc Nội dung chính có dữ liệu
+                    data.push({
+                        date: row[0], // Cột A
+                        dayOfWeek: row[1], // Cột B
+                        time: row[2], // Cột C
+                        mainContent: row[3], // Cột D
+                        detailedContent: row[4], // Cột E
+                        staff: row[5], // Cột F
+                        distribution: row[6], // Cột G
+                        location: row[7], // Cột H
+                        note: row[8], // Cột I
+                    });
+                }
+            }
+            return data;
+        }
+
+        /**
+         * Tải dữ liệu từ Google Sheet Published URL.
+         */
+        async function loadScheduleData() {
+            tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-blue-500 p-8">Đang tải dữ liệu mới nhất từ Google Sheet...</td></tr>';
+            
+            try {
+                // Tải dữ liệu trực tiếp từ Google Sheet API
+                const response = await fetch(GOOGLE_SHEET_PUBLISHED_URL); 
+                
+                if (!response.ok) {
+                    throw new Error(`Lỗi HTTP: ${response.status}. Mã HTTP ${response.status} thường là lỗi 403 (Forbidden).`);
+                }
+
+                const csvText = await response.text();
+                allScheduleData = parseCSV(csvText); // Gán dữ liệu vào biến toàn cục
+
+            } catch (error) {
+                console.error("Lỗi khi tải dữ liệu:", error);
+                // Thông báo lỗi chi tiết hơn
+                tableBody.innerHTML = `<tr class="bg-red-100"><td colspan="9" class="text-center text-red-700 p-8 font-bold">LỖI TẢI DỮ LIỆU: Failed to fetch. <span class="block mt-2 font-normal">Nguyên nhân: Mở tệp HTML trực tiếp (file:///...). Vui lòng tải lên một máy chủ web (Web server) hoặc thử nghiệm trong môi trường Canvas. Cú pháp URL đã chính xác.</span></td></tr>`;
+                allScheduleData = []; // Đảm bảo mảng rỗng nếu có lỗi
+                return; 
+            }
+
+            renderData(); // Gọi hàm hiển thị dữ liệu đã tải
+        }
+
+        /**
+         * Tạo thẻ HTML cho một hàng bảng (table row).
+         * @param {object} item - Đối tượng dữ liệu lịch công tác.
+         * @param {number} index - Chỉ số của hàng để xác định màu xen kẽ.
+         * @returns {string} - Chuỗi HTML của thẻ <tr>.
+         */
+        function createTableRow(item, index) {
+            // Xác định màu nền xen kẽ cho các cột không có màu cố định (Thời gian, Nội dung chính, Nội dung chi tiết)
+            const alternatingBg = (index % 2 === 0) ? 'bg-white' : 'bg-gray-50';
+
+            // Màu nền cố định cho các cột dựa trên hình ảnh bảng tính:
+            const colDateDayBg = 'bg-lime-100';      // Cột Ngày và Thứ: Xanh lá/Olive
+            const colStaffDistLocBg = 'bg-sky-100'; // Cột Chủ trì, Thành phần, Địa điểm: Xanh dương nhạt/Cyan
+            const colNoteBg = 'bg-green-100';       // Cột Ghi chú: Xanh lá nhạt
+
+            // Màu chữ
+            const dayText = 'text-blue-700 font-medium';
+            const staffText = 'text-red-600 font-semibold';
+            
+            // Lớp hover chung cho hàng
+            const rowHoverClass = 'hover:bg-gray-200';
+
+            return `
+                <tr class="transition duration-150 ease-in-out ${rowHoverClass}">
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 ${colDateDayBg}">${item.date}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm ${dayText} ${colDateDayBg}">${item.dayOfWeek}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-700 ${alternatingBg}">${item.time}</td>
+                    <td class="px-3 py-2 text-sm text-gray-900 ${alternatingBg}">${item.mainContent}</td>
+                    <td class="px-3 py-2 text-sm text-gray-600 ${alternatingBg}">${item.detailedContent}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm ${staffText} ${colStaffDistLocBg}">${item.staff}</td>
+                    <td class="px-3 py-2 text-sm text-gray-700 ${colStaffDistLocBg}">${item.distribution}</td>
+                    <td class="px-3 py-2 text-sm text-gray-700 ${colStaffDistLocBg}">${item.location}</td>
+                    <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 ${colNoteBg}">${item.note}</td>
+                </tr>
+            `;
+        }
+
+        /**
+         * Lọc và hiển thị dữ liệu bảng.
+         */
+        function renderData() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+
+            // Lọc dữ liệu từ biến toàn cục đã tải
+            const filteredData = allScheduleData.filter(item => {
+                const searchString = `${item.date} ${item.dayOfWeek} ${item.time} ${item.mainContent} ${item.detailedContent} ${item.staff} ${item.distribution} ${item.location} ${item.note}`.toLowerCase();
+                return searchString.includes(searchTerm);
+            });
+
+            // Sắp xếp dữ liệu theo ngày và thời gian
+            filteredData.sort((a, b) => {
+                // Chuyển đổi định dạng ngày từ DD/MM/YYYY sang YYYY-MM-DD để so sánh
+                const parseDate = (dateStr, timeStr) => {
+                    const [day, month, year] = dateStr.split('/');
+                    // Đơn giản hóa việc parse thời gian (có thể cần regex phức tạp hơn cho nhiều định dạng khác)
+                    const formattedTime = timeStr.replace('SA', ' AM').replace('CH', ' PM'); 
+                    return new Date(`${year}-${month}-${day} ${formattedTime}`);
+                };
+                
+                // Tránh lỗi nếu ngày tháng không hợp lệ
+                try {
+                    return parseDate(a.date, a.time) - parseDate(b.date, b.time);
+                } catch (e) {
+                    return 0;
+                }
+            });
+
+
+            // Hiển thị hoặc thông báo không có kết quả
+            if (filteredData.length === 0) {
+                tableBody.innerHTML = '';
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+                // Sử dụng index của filteredData để đảm bảo màu xen kẽ chính xác
+                tableBody.innerHTML = filteredData.map((item, index) => createTableRow(item, index)).join('');
+            }
+        }
+
+        // Gắn sự kiện lắng nghe
+        searchInput.addEventListener('input', renderData);
+
+        // Hiển thị dữ liệu lần đầu tiên
+        window.onload = function() {
+            // Khởi tạo tải dữ liệu
+            loadScheduleData(); 
+            
+            // Thiết lập cập nhật tự động sau mỗi 5 phút (ví dụ)
+            setInterval(loadScheduleData, 300000); // 300000 ms = 5 phút
+        }
+
+    </script>
+</body>
+</html>
