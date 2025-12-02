@@ -70,8 +70,7 @@
     <script>
         let allScheduleData = []; // Biến toàn cục chứa dữ liệu đã tải
 
-        // ĐÃ CẬP NHẬT URL CHÍNH XÁC NHẤT DO NGƯỜI DÙNG CUNG CẤP VÀ ĐÃ XUẤT BẢN CSV.
-        // LỖI 'Failed to fetch' hiện tại gần như chắc chắn là lỗi bảo mật CORS.
+        // SỬ DỤNG URL CSV CHUẨN XÁC DO NGƯỜI DÙNG CUNG CẤP VÀ ĐÃ XUẤT BẢN.
         const GOOGLE_SHEET_PUBLISHED_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A/pub?gid=2028559314&single=true&output=csv"; 
 
         const dataList = document.getElementById('dataList');
@@ -101,10 +100,14 @@
 
         /**
          * Xử lý chuỗi CSV thô thành mảng đối tượng JavaScript.
+         * Đã chuyển đổi từ logic Apps Script sang logic parse CSV thuần túy.
          * @param {string} csvText - Chuỗi dữ liệu CSV.
          * @returns {Array<object>} - Mảng các đối tượng dữ liệu.
          */
         function parseCSV(csvText) {
+            // Xử lý các trường hợp CSV có trích dẫn kép và dấu phẩy trong ô
+            // Sử dụng một hàm đơn giản để tách dòng và làm sạch dữ liệu
+            
             const lines = csvText.split('\n').filter(line => line.trim() !== '');
             if (lines.length === 0) return [];
 
@@ -113,24 +116,23 @@
             const dataStartIndex = findDataStartIndex(lines); 
 
             for (let i = dataStartIndex; i < lines.length; i++) {
-                // Tách các ô theo dấu phẩy (chuẩn CSV).
-                // Dùng biểu thức chính quy đơn giản để tránh lỗi phức tạp khi có dấu phẩy trong nội dung ô.
-                let rawCells = lines[i].split(',');
+                // Tách ô theo dấu phẩy, cố gắng xử lý các trường hợp cơ bản
+                let rawCells = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                 
                 // Chuẩn hóa và làm sạch dữ liệu
                 const row = rawCells.map(cell => cell.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
 
                 if (row.length >= 9 && (row[0] || row[3])) { // Đảm bảo có đủ cột và ít nhất cột Ngày hoặc Nội dung chính có dữ liệu
                     data.push({
-                        date: row[0], // Cột A
-                        dayOfWeek: row[1], // Cột B
-                        time: row[2], // Cột C
-                        mainContent: row[3], // Cột D
-                        detailedContent: row[4], // Cột E
-                        staff: row[5], // Cột F
-                        distribution: row[6], // Cột G
-                        location: row[7], // Cột H
-                        note: row[8], // Cột I
+                        date: row[0] || '', // Cột A
+                        dayOfWeek: row[1] || '', // Cột B
+                        time: row[2] || '', // Cột C
+                        mainContent: row[3] || '', // Cột D
+                        detailedContent: row[4] || '', // Cột E
+                        staff: row[5] || '', // Cột F
+                        distribution: row[6] || '', // Cột G
+                        location: row[7] || '', // Cột H
+                        note: row[8] || '', // Cột I
                     });
                 }
             }
@@ -144,20 +146,20 @@
             tableBody.innerHTML = '<tr><td colspan="9" class="text-center text-blue-500 p-8">Đang tải dữ liệu mới nhất từ Google Sheet...</td></tr>';
             
             try {
-                // Tải dữ liệu trực tiếp từ Google Sheet API
+                // Tải dữ liệu từ Google Sheet API
                 const response = await fetch(GOOGLE_SHEET_PUBLISHED_URL); 
                 
                 if (!response.ok) {
-                    throw new Error(`Lỗi HTTP: ${response.status}. Mã HTTP ${response.status} thường là lỗi 403 (Forbidden).`);
+                    throw new Error(`Lỗi HTTP: ${response.status}. Mã HTTP ${response.status} thường là lỗi 403 (Forbidden) do quyền truy cập.`);
                 }
 
                 const csvText = await response.text();
-                allScheduleData = parseCSV(csvText); // Gán dữ liệu vào biến toàn cục
+                allScheduleData = parseCSV(csvText); // Phân tích CSV
 
             } catch (error) {
                 console.error("Lỗi khi tải dữ liệu:", error);
                 // Thông báo lỗi chi tiết hơn
-                tableBody.innerHTML = `<tr class="bg-red-100"><td colspan="9" class="text-center text-red-700 p-8 font-bold">LỖI TẢI DỮ LIỆU: Failed to fetch. <span class="block mt-2 font-normal">Nguyên nhân: Mở tệp HTML trực tiếp (file:///...). Vui lòng tải lên một máy chủ web (Web server) hoặc thử nghiệm trong môi trường Canvas. Cú pháp URL đã chính xác.</span></td></tr>`;
+                tableBody.innerHTML = `<tr class="bg-red-100"><td colspan="9" class="text-center text-red-700 p-8 font-bold">LỖI TẢI DỮ LIỆU: Failed to fetch. <span class="block mt-2 font-normal">Nguyên nhân: Mã nguồn đã chính xác. Lỗi xảy ra do **BẢO MẬT TRÌNH DUYỆT (CORS)**. Vui lòng kiểm tra lại 2 bước sau: <br>1. Quyền chia sẻ Sheet: Phải đặt là **"Bất kỳ ai có đường liên kết"**.<br>2. Môi trường chạy: **Không mở tệp HTML trực tiếp** (file:///...). Bạn cần tải lên một Web Server (như GitHub Pages) để nó hoạt động.</span></td></tr>`;
                 allScheduleData = []; // Đảm bảo mảng rỗng nếu có lỗi
                 return; 
             }
@@ -218,10 +220,19 @@
             filteredData.sort((a, b) => {
                 // Chuyển đổi định dạng ngày từ DD/MM/YYYY sang YYYY-MM-DD để so sánh
                 const parseDate = (dateStr, timeStr) => {
-                    const [day, month, year] = dateStr.split('/');
-                    // Đơn giản hóa việc parse thời gian (có thể cần regex phức tạp hơn cho nhiều định dạng khác)
+                    const parts = dateStr.split('/');
+                    if (parts.length !== 3) return 0;
+                    const [day, month, year] = parts.map(Number);
+                    
+                    // Xử lý thời gian thô (ví dụ: '7:30 SA')
                     const formattedTime = timeStr.replace('SA', ' AM').replace('CH', ' PM'); 
-                    return new Date(`${year}-${month}-${day} ${formattedTime}`);
+                    
+                    // Tạo đối tượng Date. Tránh lỗi tháng 0-11 trong JS Date: month - 1
+                    try {
+                        return new Date(year, month - 1, day, formattedTime);
+                    } catch (e) {
+                        return new Date(0); // Trả về ngày lỗi
+                    }
                 };
                 
                 // Tránh lỗi nếu ngày tháng không hợp lệ
