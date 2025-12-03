@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v6.8 - AUTO RENDER</title>
+    <title>Lịch Công Tác Thông Minh v6.9 - FINAL PERFECT</title>
     <style>
-        /* --- GIỮ NGUYÊN GIAO DIỆN CHUẨN --- */
+        /* --- GIAO DIỆN CHÍNH --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
         #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-radius: 8px; }
         .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
@@ -16,6 +16,11 @@
         .btn-test-notify { background-color: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; margin-left: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s; }
         .btn-test-notify:active { transform: scale(0.95); }
         .btn-test-notify:hover { background-color: #218838; }
+        
+        /* Hiệu ứng rung cho thẻ trạng thái */
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        .shake-active { animation: shake 0.5s; border-left-color: #ff9800 !important; background: #fff3e0 !important; }
+
         .table-responsive { overflow: auto; max-height: 80vh; border: 1px solid #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-radius: 4px; position: relative; display: none; }
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14px; background-color: white; }
         table.custom-schedule thead th { background-color: #4472C4; color: white; padding: 14px 10px; text-align: center; border: 1px solid #fff; border-bottom: 2px solid #2c4a85; white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
@@ -36,11 +41,32 @@
         #searchInput { flex-grow: 1; padding: 12px 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; }
         .btn-print { background-color: #4472C4; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* Toast Notification */
+        /* --- THÔNG BÁO NỔI (TOAST) SIÊU NỔI BẬT --- */
         #toast-notify {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 16px; position: fixed; z-index: 9999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 15px; opacity: 0; transition: opacity 0.5s, bottom 0.5s;
+            visibility: hidden; 
+            min-width: 300px; 
+            background-color: #28a745; /* Màu xanh lá đậm */
+            color: #fff; 
+            text-align: center; 
+            border-radius: 50px; 
+            padding: 16px; 
+            position: fixed; 
+            z-index: 2147483647; /* Luôn nằm trên cùng */
+            right: 30px; /* Góc phải */
+            top: 30px; /* Góc trên (Dễ thấy hơn ở dưới) */
+            font-size: 16px; 
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            opacity: 0; 
+            transition: opacity 0.5s, top 0.5s;
+            transform: translateY(-20px);
         }
-        #toast-notify.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #toast-notify.show { 
+            visibility: visible; 
+            opacity: 1; 
+            top: 30px; 
+            transform: translateY(0);
+        }
 
         .tag-common { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.9em; display: inline-block; margin: 2px; }
         .tag-bgh { background-color: #FFC000; color: #000; }
@@ -50,7 +76,7 @@
         .tag-name-hp { background-color: #c8e6c9; color: #2e7d32; }
         .tag-name-tt { background-color: #bbdefb; color: #1565c0; }
         .tag-name-gv { background-color: #f5f5f5; color: #424242; border: 1px solid #e0e0e0;}
-        @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, .btn-test-notify { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
+        @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, .btn-test-notify, #toast-notify { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
     </style>
 </head>
 <body>
@@ -59,7 +85,7 @@
     <div id="top-info" class="schedule-header"></div>
     <div id="ai-dashboard" class="dashboard-panel"></div>
     <div id="day-filters" class="filter-tabs"></div>
-    <div id="loading-state"><div class="spinner"></div><span id="loading-text">AI đang kết nối dữ liệu...</span></div>
+    <div id="loading-state"><div class="spinner"></div><span id="loading-text">AI đang tải dữ liệu...</span></div>
     <div id="search-area" class="search-wrapper">
         <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm...">
         <button onclick="window.print()" class="btn-print">🖨️ In Lịch</button>
@@ -67,15 +93,15 @@
     <div id="main-table" class="table-responsive"></div>
 </div>
 
-<div id="toast-notify">Dữ liệu đã được cập nhật tự động!</div>
+<div id="toast-notify">🔔 Dữ liệu vừa được cập nhật tự động!</div>
 
 <script>
 /**
- * AI SUPER-SCHEDULER v6.8
- * ĐÃ TÍCH HỢP LINK APPS SCRIPT CỦA BẠN.
+ * AI SUPER-SCHEDULER v6.9 - FINAL PERFECT
+ * Cải tiến: Thông báo Toast vị trí Top-Right, dùng classList chuẩn.
  */
 
-// LINK CỦA BẠN ĐÃ ĐƯỢC DÁN VÀO ĐÂY:
+// LINK APPS SCRIPT CỦA BẠN:
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
 
 const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ,Sân trường,BGH,Toàn trường,,THCS`;
@@ -85,8 +111,8 @@ const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 
 
 const App = {
     currentFilterDay: 'all',
-    CACHE_KEY: 'instant_schedule_data_v2', // Đổi key cache để tránh dữ liệu cũ
-    HASH_KEY: 'instant_schedule_hash_v2',
+    CACHE_KEY: 'instant_schedule_data_v3',
+    HASH_KEY: 'instant_schedule_hash_v3',
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
@@ -144,16 +170,12 @@ const App = {
 
     // --- TẢI DỮ LIỆU ---
     loadScheduleData(isBackground = false) {
-        // Anti-cache: Thêm thời gian hiện tại vào link
         const noCacheUrl = SCRIPT_URL + (SCRIPT_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
 
         fetch(noCacheUrl, { method: 'GET' })
             .then(res => res.text())
             .then(csv => {
-                if (!csv || csv.includes("Error") || csv.length < 50) {
-                     console.warn("Dữ liệu trả về không hợp lệ hoặc lỗi quyền truy cập.");
-                     return;
-                }
+                if (!csv || csv.includes("Error") || csv.length < 50) return;
                 if(isBackground) {
                     this.checkAndAutoUpdate(csv);
                 } else {
@@ -161,7 +183,6 @@ const App = {
                 }
             })
             .catch(err => {
-                console.error("Lỗi kết nối:", err);
                 if(!isBackground && !localStorage.getItem(this.CACHE_KEY)) this.renderProfessionalTable(FALLBACK_DATA, true);
             });
     },
@@ -172,28 +193,44 @@ const App = {
         this.renderProfessionalTable(newCsv);
     },
 
-    // TỰ ĐỘNG CẬP NHẬT UI NẾU DỮ LIỆU KHÁC
+    // TỰ ĐỘNG CẬP NHẬT & HIỆN THÔNG BÁO
     checkAndAutoUpdate(newCsv) {
         const oldHash = localStorage.getItem(this.HASH_KEY);
-        // So sánh độ dài chuỗi
+        
+        // Nếu độ dài thay đổi => Có update
         if (oldHash && parseInt(oldHash) !== newCsv.length) {
-            console.log("Dữ liệu mới đã về! Cập nhật ngay...");
+            console.log("--> UPDATE DETECTED: TRIGGERING TOAST");
             
             // 1. Render lại bảng
             this.processNewData(newCsv); 
 
-            // 2. Hiện thông báo Toast
+            // 2. Kích hoạt hiệu ứng RUNG cho thẻ trạng thái
+            const statusCard = document.getElementById("status-card-inner");
+            if(statusCard) {
+                statusCard.classList.add("shake-active");
+                setTimeout(() => statusCard.classList.remove("shake-active"), 1000);
+            }
+
+            // 3. Hiện thông báo nổi (Toast) - CÁCH MỚI
             const toast = document.getElementById("toast-notify");
-            toast.className = "show";
-            setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+            if (toast) {
+                // Reset animation
+                toast.classList.remove("show");
+                void toast.offsetWidth; // Trigger reflow
+                
+                // Show
+                toast.classList.add("show");
+                
+                // Ẩn sau 5 giây
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 5000);
+            }
         }
     },
 
     initRealtimeCheck() {
-        // Kiểm tra mỗi 10 giây
-        setInterval(() => {
-            this.loadScheduleData(true); 
-        }, 10000); 
+        setInterval(() => { this.loadScheduleData(true); }, 10000); 
     },
 
     renderProfessionalTable(csvText, isDemo = false) {
@@ -219,8 +256,9 @@ const App = {
             dashboardTarget.innerHTML = `
                 <div class="stat-card">Tổng sự kiện: <span>${bodyRows.length}</span></div>
                 <div class="stat-card">Họp BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
-                <div class="stat-card" style="border-left-color: #28a745;">
-                    <span style="color:#28a745;">⚡ Live Update</span>
+                <div id="status-card-inner" class="stat-card" style="border-left-color: #28a745;">
+                    <span style="color:#28a745;">⚡ Kết nối OK</span>
+                    <button class="btn-test-notify" onclick="testToast()">🔔 Test Toast</button>
                 </div>
             `;
             dashboardTarget.style.display = "flex";
@@ -275,6 +313,15 @@ const App = {
         return spanMap;
     }
 };
+
+// Hàm test toast thủ công cho bạn kiểm tra
+function testToast() {
+    const toast = document.getElementById("toast-notify");
+    toast.classList.remove("show");
+    void toast.offsetWidth; // Reset
+    toast.classList.add("show");
+    setTimeout(() => { toast.classList.remove("show"); }, 3000);
+}
 
 App.init();
 </script>
