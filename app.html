@@ -3,263 +3,425 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - Smart View</title>
+    <title>Lịch Công Tác BHS - V9.2 CLEAN</title>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#4472C4">
+    <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
+    
     <style>
-        :root {
-            --primary-blue: #2c5282;
-            --header-text: #1a365d;
-            --bg-active: #2b6cb0;
-            --text-red: #c53030;
-            --border-color: #e2e8f0;
-            --badge-yellow: #ecc94b;
-        }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; }
-        body { background-color: #f7fafc; padding: 20px; font-size: 14px; }
-
-        /* HEADER */
-        .header-container { text-align: center; margin-bottom: 20px; }
-        .main-title { color: var(--header-text); font-size: 22px; font-weight: 800; text-transform: uppercase; margin-bottom: 15px; }
+        /* --- CSS BASE --- */
+        body { margin: 0; padding: 0; background-color: #f4f6f9; scroll-behavior: smooth; }
+        #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border-radius: 12px; }
         
-        .stats-bar { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
-        .stat-item { background: white; padding: 6px 15px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-weight: 600; font-size: 13px; }
-        .stat-item span { color: var(--text-red); }
-
-        .filter-bar { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
-        .btn-filter {
-            padding: 6px 14px; border: 1px solid var(--border-color); background: white;
-            border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; color: #4a5568; transition: all 0.2s;
-        }
-        .btn-filter.active { background-color: var(--bg-active); color: white; border-color: var(--bg-active); }
-
-        /* TABLE */
-        .table-responsive { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        table { width: 100%; border-collapse: collapse; min-width: 1200px; /* Đảm bảo bảng đủ rộng */ }
+        /* HEADER & DASHBOARD */
+        .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+        .schedule-header .sub-info { text-align: center; color: #555; margin-bottom: 20px; font-weight: 600; font-size: 16px; }
         
-        th {
-            background-color: var(--primary-blue); color: white; padding: 12px 10px;
-            font-size: 13px; text-transform: uppercase; font-weight: 700; text-align: left;
-            position: sticky; top: 0; white-space: nowrap; z-index: 10;
-        }
-
-        td {
-            padding: 10px; border-bottom: 1px solid var(--border-color); border-right: 1px solid var(--border-color);
-            color: #2d3748; vertical-align: top; /* Căn lề trên để dễ nhìn khi nội dung dài */
-            line-height: 1.5;
-        }
-
-        /* SMART CONTENT STYLING */
-        /* Cho phép xuống dòng và giữ định dạng văn bản */
-        .text-wrap { 
-            white-space: pre-line; 
-            word-wrap: break-word; 
-            max-width: 300px; /* Giới hạn chiều rộng để text tự xuống dòng */
-        }
-
-        .col-date { font-weight: 700; color: var(--primary-blue); text-align: center; background-color: #ebf8ff; width: 80px; vertical-align: middle; }
-        .col-time { color: var(--text-red); font-weight: 700; width: 80px; white-space: nowrap; }
-        .col-host { width: 80px; }
+        .dashboard-panel { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
+        .stat-card { background: white; padding: 12px 24px; border-radius: 10px; border-left: 5px solid #4472C4; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; transition: transform 0.2s; border: 1px solid #eee; }
+        .stat-card span { color: #d32f2f; font-size: 1.3em; margin-left: 5px; font-weight: 800; }
         
-        /* Logic nút Xem thêm */
-        .more-content { display: none; }
-        .btn-read-more {
-            color: var(--bg-active); font-size: 11px; font-weight: bold; cursor: pointer;
-            text-decoration: underline; display: block; margin-top: 5px; border: none; background: none; padding: 0;
+        /* TABLE STYLES */
+        .table-responsive { overflow: auto; max-height: 75vh; border: 1px solid #e0e0e0; border-radius: 8px; position: relative; display: none; scrollbar-width: thin; }
+        table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14.5px; background-color: white; }
+        
+        /* --- HEADER CHUẨN MÀU TRẮNG --- */
+        table.custom-schedule thead th { 
+            background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); 
+            color: #ffffff !important; 
+            padding: 16px 12px; 
+            text-align: center; 
+            border-right: 1px solid rgba(255,255,255,0.2); 
+            white-space: nowrap; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            position: sticky; 
+            top: 0; 
+            z-index: 30; 
+            vertical-align: middle;
         }
-        .btn-read-more:hover { color: var(--text-red); }
+        
+        table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.6; }
 
-        /* Badges */
-        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 4px;}
-        .badge-warning { background-color: var(--badge-yellow); color: #744210; }
-        .badge-dept { background-color: #e2e8f0; color: #2d3748; }
+        /* --- CLASS ẨN HOÀN TOÀN (Dùng cho cột đầu tiên) --- */
+        .col-hidden { display: none !important; }
 
-        tr:hover td { background-color: #faf5ff; }
+        /* Cột Ngày (Cột thứ 2 -> Giờ thành cột đầu tiên hiển thị) */
+        table.custom-schedule td.col-sticky-date { 
+            background-color: #f0f7ff; 
+            font-weight: 700; 
+            text-align: center; 
+            color: #1565c0; 
+            position: sticky; 
+            left: 0; /* Dính sát lề trái vì cột trước nó đã bị ẩn */
+            z-index: 10; 
+            border-right: 2px solid #b0bec5; 
+        }
+
+        /* Cột Thời gian */
+        table.custom-schedule td.col-time { 
+            font-weight: 700; 
+            text-align: center; 
+            white-space: nowrap; 
+            color: #c62828; 
+            background-color: #fff8f8; 
+        }
+
+        /* --- MOBILE LOGIC --- */
+        @media screen and (max-width: 768px) {
+            /* 1. Bỏ cố định cột Ngày trên điện thoại */
+            table.custom-schedule td.col-sticky-date, 
+            table.custom-schedule th.col-sticky-date {
+                position: static !important;
+                z-index: 1 !important;
+                border-right: 1px solid #e0e0e0 !important;
+            }
+            
+            /* 2. Cố định cột Thời Gian trên điện thoại */
+            table.custom-schedule td.col-time,
+            table.custom-schedule th.col-time {
+                position: sticky !important;
+                left: 0 !important;
+                z-index: 25 !important;
+                border-right: 2px solid #888 !important;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            }
+            table.custom-schedule thead th.col-time { z-index: 35 !important; }
+            table.custom-schedule td.col-time { background-color: #fff8f8; }
+            
+            /* Màu cột thời gian sticky khi là Today */
+            tr.is-today td.col-time {
+                background-color: #8fd19e !important;
+                color: #000 !important;
+                border-right: 2px solid #0f5132 !important;
+            }
+        }
+
+        /* --- FULL GREEN BLOCK FOR TODAY --- */
+        tr.is-today td { 
+            background-color: #c3e6cb !important; 
+            color: #000 !important;
+            border-bottom: 1px solid #8fd19e !important; 
+        }
+        tr.is-today td.col-sticky-date {
+            background-color: #8fd19e !important; 
+            color: #064420 !important;
+            border-right: 2px solid #0f5132 !important; 
+        }
+        @media screen and (max-width: 768px) {
+            tr.is-today td.col-sticky-date { border-right: 1px solid #0f5132 !important; }
+        }
+
+        table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
+        
+        /* UTILS */
+        .filter-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
+        .filter-btn { padding: 8px 20px; border: 1px solid #ddd; background: white; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; }
+        .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; }
+        
+        #loading-state { text-align: center; padding: 50px; color: #4472C4; display: block; }
+        .spinner { border: 4px solid rgba(68, 114, 196, 0.1); border-top: 4px solid #4472C4; border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 12px; display: none; }
+        #searchInput { flex-grow: 1; padding: 12px 20px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
+        .btn-print { background-color: #555; color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        #install-app-btn { display: none; background: #000; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
+
+        /* TAG BGH */
+        .tag-bgh { 
+            background-color: #FFC000; color: #000; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #toast-notify { visibility: hidden; min-width: 300px; background: #198754; color: #fff; text-align: center; border-radius: 50px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 99999; font-size: 15px; opacity: 0; transition: opacity 0.5s; font-weight: bold; }
+        #toast-notify.show { visibility: visible; opacity: 1; }
+        
+        @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, #toast-notify, #install-app-btn { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
     </style>
 </head>
 <body>
 
-    <div class="header-container">
-        <h1 class="main-title">LỊCH CÔNG TÁC BHS TUẦN 18 (2025)</h1>
-        
-        <div class="stats-bar">
-            <div class="stat-item">Tổng sự kiện: <span id="totalEvents">0</span></div>
-            <div class="stat-item">BGH chủ trì: <span id="totalBGH">0</span></div>
-            <div class="stat-item">Hôm nay: <span style="color: green;">03/12</span></div>
-        </div>
-
-        <div class="filter-bar" id="filterContainer"></div>
+<div id="schedule-container">
+    <div style="text-align: center;">
+        <button id="install-app-btn">📲 Cài đặt App BHS</button>
     </div>
-
-    <div class="table-responsive">
-        <table>
-            <thead>
-                <tr>
-                    <th>Ngày</th>
-                    <th>Thời gian</th>
-                    <th style="width: 20%;">Nội dung chính</th>
-                    <th style="width: 25%;">Nội dung chi tiết</th>
-                    <th>Chủ trì</th>
-                    <th>Thành phần</th>
-                    <th>Địa điểm</th>
-                    <th>Ghi chú</th>
-                    <th>Đơn vị</th>
-                </tr>
-            </thead>
-            <tbody id="scheduleBody"></tbody>
-        </table>
+    <div id="top-info" class="schedule-header"></div>
+    <div id="ai-dashboard" class="dashboard-panel"></div>
+    <div id="day-filters" class="filter-tabs"></div>
+    <div id="loading-state"><div class="spinner"></div><span id="loading-text" style="font-weight: 600;">Đang tải dữ liệu...</span></div>
+    
+    <div id="search-area" class="search-wrapper">
+        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm (ví dụ: Thứ 5, BGH, 04/12)...">
+        <button onclick="window.print()" class="btn-print">In Lịch</button>
     </div>
+    
+    <div id="main-table" class="table-responsive"></div>
+</div>
+<div id="toast-notify">🔔 Dữ liệu đã được cập nhật!</div>
 
-    <script>
-        // --- 1. DỮ LIỆU MẪU (BẠN COPY NỘI DUNG DÀI VÀO ĐÂY THOẢI MÁI) ---
-        const rawScheduleData = [
-            {
-                date: "01/12", day: "Thứ 2",
-                events: [
-                    { 
-                        time: "7:30 SA", content: "Chào cờ", 
-                        detail: "Chào cờ đầu tuần. Triển khai kế hoạch tháng 12. Phát động phong trào thi đua 'Dạy tốt - Học tốt'.\nKhen thưởng các lớp đạt thành tích cao trong tuần qua.", 
-                        host: "TPT", attendees: "Toàn trường", location: "Sân trường", note: "", dept: "TH" 
-                    },
-                    { 
-                        time: "7:45 SA", content: "Trải nghiệm AI ROBOTICS", 
-                        detail: "Học sinh lớp 1/2 và 1/1 tham gia trải nghiệm. Nội dung: Làm quen với Robot Alpha Mini, lập trình kéo thả cơ bản.", 
-                        host: "GVCN", attendees: "GVCN, QS", location: "Phòng AI ROBOTICS", note: "GVCN quản lý HS", dept: "TH" 
-                    }
-                ]
-            },
-            {
-                date: "02/12", day: "Thứ 3",
-                events: [
-                    { 
-                        time: "7:45 SA", content: "Dự giờ thăm lớp", 
-                        detail: "Dự giờ đột xuất các lớp khối 4, 5. Kiểm tra hồ sơ giáo án giáo viên.\nLưu ý: GV cần chuẩn bị đầy đủ hồ sơ theo quy định mới nhất của Bộ GD.", 
-                        host: "BGH", attendees: "BGH, Tổ trưởng CM", location: "Lớp học", note: "Quan trọng", dept: "TH", isHighlight: true 
-                    },
-                    { 
-                        time: "8:00 SA", content: "Tập huấn chuyên môn", 
-                        detail: "Tập huấn phương pháp dạy học tích cực môn Ngữ Văn theo chương trình GDPT 2018. \nNgười trình bày: TS. Nguyễn Văn A - Đại học Sư Phạm.", 
-                        host: "SGD", attendees: "GV Văn THCS", location: "Hội trường B", note: "", dept: "THCS" 
-                    }
-                ]
-            },
-            // ... Bạn có thể thêm các ngày tiếp theo ở đây
-             {
-                date: "03/12", day: "Thứ 4",
-                events: [
-                     { time: "14:00", content: "Họp BGH", detail: "Họp giao ban tuần", host: "BGH", attendees: "BGH", location: "VP", note: "", dept: "VP" }
-                ]
-            }
-        ];
+<script>
+/**
+ * AI SUPER-SCHEDULER V9.2
+ * - HIDDEN: First Column (Index 0) is now completely removed from view.
+ * - LAYOUT: "Ngày" column becomes the first visible column (Sticky left).
+ */
 
-        // --- 2. HÀM LOGIC XỬ LÝ HIỂN THỊ THÔNG MINH ---
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
 
-        function initFilters() {
-            const days = ["Tất cả", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
-            const container = document.getElementById('filterContainer');
-            
-            days.forEach((day, index) => {
-                const btn = document.createElement('button');
-                btn.className = `btn-filter ${index === 0 ? 'active' : ''}`;
-                btn.innerText = day;
-                btn.onclick = () => filterSchedule(day, btn);
-                container.appendChild(btn);
-            });
-        }
+const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ đầu tuần,Sân trường,BGH,Toàn trường,,THCS`;
 
-        // Hàm xử lý văn bản dài: Cắt ngắn và thêm nút Xem thêm
-        function processLongText(text, limit = 80) {
-            if (!text) return "";
-            if (text.length <= limit) return `<div class="text-wrap">${text}</div>`;
+const TAG_COLOR_MAP = { "BGH": "tag-bgh" };
+const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
-            // Tạo ID ngẫu nhiên cho mỗi đoạn văn bản để toggle
-            const uniqueId = 'more-' + Math.random().toString(36).substr(2, 9);
-            const shortText = text.substring(0, limit);
-            const fullText = text;
+const App = {
+    currentFilterDay: 'all',
+    CACHE_KEY: 'instant_schedule_data_v9',
+    HASH_KEY: 'instant_schedule_hash_v9',
+    deferredPrompt: null,
 
-            return `
-                <div class="text-wrap">
-                    <span id="short-${uniqueId}">${shortText}...</span>
-                    <span id="full-${uniqueId}" class="more-content">${fullText}</span>
-                    <button class="btn-read-more" onclick="toggleText('${uniqueId}', this)">Xem thêm</button>
-                </div>
-            `;
-        }
-
-        // Hàm bật/tắt xem thêm
-        window.toggleText = function(id, btn) {
-            const shortSpan = document.getElementById(`short-${id}`);
-            const fullSpan = document.getElementById(`full-${id}`);
-            
-            if (fullSpan.style.display === "inline") {
-                fullSpan.style.display = "none";
-                shortSpan.style.display = "inline";
-                btn.innerText = "Xem thêm";
-            } else {
-                fullSpan.style.display = "inline";
-                shortSpan.style.display = "none";
-                btn.innerText = "Thu gọn";
-            }
-        }
-
-        function renderSchedule(filterDay = "Tất cả") {
-            const tbody = document.getElementById('scheduleBody');
-            tbody.innerHTML = ''; 
-            
-            let totalEvt = 0;
-            let totalBGH = 0;
-
-            rawScheduleData.forEach(dayGroup => {
-                if (filterDay !== "Tất cả" && dayGroup.day !== filterDay) return;
-
-                const rowCount = dayGroup.events.length;
-                dayGroup.events.forEach((evt, index) => {
-                    totalEvt++;
-                    if(evt.host === 'BGH') totalBGH++;
-
-                    const tr = document.createElement('tr');
-
-                    if (index === 0) {
-                        const tdDate = document.createElement('td');
-                        tdDate.className = 'col-date';
-                        tdDate.rowSpan = rowCount;
-                        tdDate.innerHTML = `${dayGroup.day}<br><small>${dayGroup.date}</small>`;
-                        tr.appendChild(tdDate);
-                    }
-
-                    const hostDisplay = evt.host === 'BGH' || evt.isHighlight 
-                        ? `<span class="badge badge-warning">${evt.host}</span>` 
-                        : evt.host;
-
-                    // Áp dụng hàm processLongText cho Nội dung chính và Chi tiết
-                    tr.innerHTML += `
-                        <td class="col-time">${evt.time}</td>
-                        <td class="col-content">${processLongText(evt.content, 60)}</td>
-                        <td>${processLongText(evt.detail, 100)}</td>
-                        <td class="col-host">${hostDisplay}</td>
-                        <td>${processLongText(evt.attendees, 50)}</td>
-                        <td>${evt.location}</td>
-                        <td>${processLongText(evt.note, 50)}</td>
-                        <td><span class="badge badge-dept">${evt.dept}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            });
-
-            // Update stats
-            document.getElementById('totalEvents').innerText = totalEvt;
-            document.getElementById('totalBGH').innerText = totalBGH;
-        }
-
-        function filterSchedule(selectedDay, btnElement) {
-            document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-            renderSchedule(selectedDay);
-        }
-
+    init() {
         document.addEventListener('DOMContentLoaded', () => {
-            initFilters();
-            renderSchedule();
+            this.registerServiceWorker();
+            this.loadFromCache();
+            this.loadScheduleData(false);
+            this.initRealtimeCheck(); 
+            this.setupInstallButton();
         });
-    </script>
+    },
+
+    registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+        }
+    },
+
+    setupInstallButton() {
+        const installBtn = document.getElementById('install-app-btn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            this.deferredPrompt = e;
+            installBtn.style.display = 'inline-block';
+        });
+        installBtn.addEventListener('click', () => {
+            installBtn.style.display = 'none';
+            this.deferredPrompt.prompt();
+            this.deferredPrompt.userChoice.then((res) => { this.deferredPrompt = null; });
+        });
+    },
+
+    setupEventListeners() {
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput) searchInput.addEventListener('keyup', () => setTimeout(() => this.filterTable(), 300));
+    },
+
+    parseCSV(text) {
+        const rows = []; let currentRow = []; let currentVal = ''; let inQuote = false;
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i], nextChar = text[i + 1];
+            if (char === '"') { inQuote ? (nextChar === '"' ? (currentVal += '"', i++) : inQuote = !inQuote) : inQuote = !inQuote; } 
+            else if (char === ',' && !inQuote) { currentRow.push(currentVal); currentVal = ''; } 
+            else if ((char === '\r' || char === '\n') && !inQuote) { if (char === '\r' && nextChar === '\n') i++; currentRow.push(currentVal); rows.push(currentRow); currentRow = []; currentVal = ''; } else { currentVal += char; }
+        }
+        if (currentRow.length > 0 || currentVal !== '') { currentRow.push(currentVal); rows.push(currentRow); }
+        return rows;
+    },
+
+    filterTable() {
+        const input = document.getElementById("searchInput");
+        const textFilter = input.value.toUpperCase();
+        const table = document.querySelector("table.custom-schedule");
+        if (!table) return;
+        
+        const rows = table.querySelector("tbody").getElementsByTagName("tr");
+        for (const row of rows) {
+            if (row.classList.contains('no-results-row')) continue;
+            
+            const rowDay = row.getAttribute('data-day');
+            const rowHiddenDay = rowDay ? rowDay.toUpperCase() : '';
+            const rowHiddenDate = row.getAttribute('data-date') ? row.getAttribute('data-date').toUpperCase() : '';
+            const rowVisibleText = row.textContent.toUpperCase();
+
+            const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
+            const searchMatch = textFilter === "" || 
+                                rowVisibleText.includes(textFilter) || 
+                                rowHiddenDay.includes(textFilter) ||
+                                rowHiddenDate.includes(textFilter);
+            
+            row.style.display = (dayMatch && searchMatch) ? "" : "none";
+        }
+    },
+
+    setDayFilter(day, btnElement) {
+        this.currentFilterDay = day;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        if(btnElement) btnElement.classList.add('active');
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput) searchInput.value = '';
+        this.filterTable();
+    },
+
+    loadFromCache() {
+        const cached = localStorage.getItem(this.CACHE_KEY);
+        if (cached) this.renderProfessionalTable(cached, false);
+    },
+
+    loadScheduleData(isBackground = false) {
+        const noCacheUrl = SCRIPT_URL + (SCRIPT_URL.includes('?') ? '&' : '?') + 'nocache=' + new Date().getTime();
+        fetch(noCacheUrl, { method: 'GET' })
+            .then(res => res.text())
+            .then(csv => {
+                if (!csv || csv.includes("Error") || csv.length < 50) return;
+                if(isBackground) { this.checkAndAutoUpdate(csv); } else { this.processNewData(csv); }
+            })
+            .catch(err => {
+                if(!isBackground && !localStorage.getItem(this.CACHE_KEY)) this.renderProfessionalTable(FALLBACK_DATA, true);
+            });
+    },
+
+    processNewData(newCsv) {
+        localStorage.setItem(this.CACHE_KEY, newCsv);
+        localStorage.setItem(this.HASH_KEY, newCsv.length);
+        this.renderProfessionalTable(newCsv);
+    },
+
+    checkAndAutoUpdate(newCsv) {
+        const oldHash = localStorage.getItem(this.HASH_KEY);
+        if (oldHash && parseInt(oldHash) !== newCsv.length) {
+            this.processNewData(newCsv); 
+            const toast = document.getElementById("toast-notify");
+            if (toast) { toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 3000); }
+            
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({ type: 'SHOW_NOTIFICATION', title: 'Cập nhật', body: 'Lịch công tác mới' });
+            }
+        }
+    },
+
+    initRealtimeCheck() { setInterval(() => { this.loadScheduleData(true); }, 15000); },
+
+    getTodayString() {
+        const today = new Date();
+        const d = today.getDate();
+        const m = today.getMonth() + 1;
+        const format1 = `${d < 10 ? '0' + d : d}/${m < 10 ? '0' + m : m}`;
+        const format2 = `${d}/${m}`;
+        const format3 = `${d}/${m < 10 ? '0' + m : m}`;
+        return [format1, format2, format3];
+    },
+
+    renderProfessionalTable(csvText, isDemo = false) {
+        try {
+            const rawData = this.parseCSV(csvText);
+            const headerRowIndex = rawData.findIndex(row => row.some(c => c && c.toLowerCase().includes('thứ'))) || 0;
+            const headers = rawData[headerRowIndex];
+            const bodyRows = rawData.slice(headerRowIndex + 1).filter(r => !r.every(c => c.trim() === ''));
+            
+            if (!isDemo && headerRowIndex > 0) {
+                const info = rawData[0].filter(c => c).join(' - ');
+                if(info) document.getElementById('top-info').innerHTML = `<h2>${info}</h2>`;
+            }
+
+            const todayFormats = this.getTodayString(); 
+
+            const dashboardTarget = document.getElementById('ai-dashboard');
+            dashboardTarget.innerHTML = `
+                <div class="stat-card">Sự kiện: <span>${bodyRows.length}</span></div>
+                <div class="stat-card">Lịch BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
+                <div class="stat-card" style="border-left-color: #198754;">Hôm nay: <span style="color: #198754;">${todayFormats[0]}</span></div>
+            `;
+            dashboardTarget.style.display = "flex";
+
+            const spanMap = this.calculateRowSpans(bodyRows, headers);
+            let bodyHtml = ''; const uniqueDays = new Set();
+            const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
+            const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
+            // Giả định cột "Ngày" là cột thứ 2 (Index 1) sau cột "Thứ" (Index 0)
+            const idxNgay = 1;
+
+            let lastSeenDate = '';
+            let lastSeenDay = '';
+
+            const headerHtml = headers.map((h, i) => {
+                // --- ẨN CỘT ĐẦU TIÊN (INDEX 0) ---
+                const extraClass = (i === 0) ? 'col-hidden' : '';
+                return `<th class="${extraClass}">${h}</th>`;
+            }).join('');
+
+            bodyRows.forEach((row, rIdx) => {
+                let dayText = (row[0] || '').trim();
+                let dateText = (row[idxNgay] || '').trim();
+
+                if (dateText) lastSeenDate = dateText;
+                if (dayText) lastSeenDay = dayText;
+
+                if(lastSeenDay) uniqueDays.add(lastSeenDay);
+                
+                let isToday = false;
+                if (lastSeenDate) {
+                    isToday = todayFormats.some(fmt => lastSeenDate.includes(fmt));
+                }
+                const rowClass = isToday ? 'is-today' : '';
+
+                bodyHtml += `<tr data-day="${lastSeenDay}" data-date="${lastSeenDate}" class="${rowClass}">`;
+                
+                headers.forEach((h, c) => {
+                    if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
+                    let content = row[c] || '';
+                    
+                    if(c === idxChuTri) {
+                        content = content.replace(TAG_REGEX, m => `<span class="${TAG_COLOR_MAP[m]}">${m}</span>`);
+                    } else if (content === 'BGH') {
+                        content = `<span class="tag-bgh">${content}</span>`;
+                    }
+                    
+                    let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
+                    
+                    // --- ẨN CỘT ĐẦU TIÊN (INDEX 0) TRONG BODY ---
+                    if (c === 0) cls += ' col-hidden';
+                    
+                    if (c === idxChuTri) cls += ' align-center';
+                    
+                    let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
+                    bodyHtml += `<td class="${cls}"${rowspan}>${content.replace(/\n/g, '<br>')}</td>`;
+                });
+                bodyHtml += `</tr>`;
+            });
+
+            document.getElementById('main-table').innerHTML = `<table class="custom-schedule"><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
+            
+            let filtersHtml = `<button class="filter-btn active" onclick="App.setDayFilter('all', this)">Tất cả</button>`;
+            uniqueDays.forEach(day => { if(day.length<25) filtersHtml += `<button class="filter-btn" onclick="App.setDayFilter('${day}', this)">${day}</button>`; });
+            document.getElementById('day-filters').innerHTML = filtersHtml;
+            document.getElementById('day-filters').style.display = 'flex';
+
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('main-table').style.display = 'block';
+            document.getElementById('search-area').style.display = 'flex';
+            this.setupEventListeners();
+            
+            setTimeout(() => {
+                const todayRow = document.querySelector('tr.is-today');
+                if(todayRow) todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+
+        } catch (e) { console.error(e); }
+    },
+
+    calculateRowSpans(bodyRows, headers) {
+        if (!bodyRows.length) return [];
+        const colsToMerge = [0, 1, headers.findIndex(c => c.toLowerCase().includes('thời gian'))].filter(i => i !== -1);
+        const spanMap = bodyRows.map(() => Array(headers.length).fill(1));
+        let start = 0;
+        for (let i = 1; i < bodyRows.length; i++) {
+            const match = colsToMerge.every(c => (bodyRows[i][c]||'').trim() === (bodyRows[i-1][c]||'').trim() && (bodyRows[i][c]||''));
+            if (match) { colsToMerge.forEach(c => { spanMap[i][c] = 0; spanMap[start][c]++; }); } else { start = i; }
+        }
+        return spanMap;
+    }
+};
+
+App.init();
+</script>
 </body>
 </html>
