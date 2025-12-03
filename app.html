@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - SMART GROUP V8.3</title>
+    <title>Lịch Công Tác BHS - SMART SEARCH V8.4</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -32,16 +32,13 @@
         /* Sticky Date Column */
         table.custom-schedule td.col-sticky-date { background-color: #f0f7ff; font-weight: 700; text-align: center; color: #1565c0; position: sticky; left: 0; z-index: 10; border-right: 2px solid #b0bec5; }
         table.custom-schedule td.col-time { font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; }
-        table.custom-schedule td.align-center { text-align: center; }
         
-        /* --- [FIX] FULL GREEN BLOCK FOR TODAY --- */
+        /* --- FULL GREEN BLOCK FOR TODAY --- */
         tr.is-today td { 
-            background-color: #c3e6cb !important; /* Xanh lá toàn bộ */
+            background-color: #c3e6cb !important; 
             color: #000 !important;
-            border-bottom: 1px solid #8fd19e !important; /* Viền mờ giữa các dòng cùng ngày */
+            border-bottom: 1px solid #8fd19e !important; 
         }
-        /* Viền đậm chỉ dành cho đường bao ngoài (nếu cần xử lý phức tạp hơn bằng JS, nhưng tạm thời để border-color này cho dịu) */
-        
         tr.is-today td.col-sticky-date {
             background-color: #8fd19e !important; 
             color: #064420 !important;
@@ -85,32 +82,25 @@
     <div style="text-align: center;">
         <button id="install-app-btn">📲 Cài đặt App BHS</button>
     </div>
-    
     <div id="top-info" class="schedule-header"></div>
-    
     <div id="ai-dashboard" class="dashboard-panel"></div>
-    
     <div id="day-filters" class="filter-tabs"></div>
-    
-    <div id="loading-state">
-        <div class="spinner"></div>
-        <span id="loading-text" style="font-weight: 600;">Đang tải dữ liệu...</span>
-    </div>
+    <div id="loading-state"><div class="spinner"></div><span id="loading-text" style="font-weight: 600;">Đang tải dữ liệu...</span></div>
     
     <div id="search-area" class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm...">
+        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm (ví dụ: Thứ 5, BGH, 04/12)...">
         <button onclick="window.print()" class="btn-print">In Lịch</button>
     </div>
     
     <div id="main-table" class="table-responsive"></div>
 </div>
-
 <div id="toast-notify">🔔 Dữ liệu đã được cập nhật!</div>
 
 <script>
 /**
- * AI SUPER-SCHEDULER V8.3
- * Fix: Smart Grouping - Tô màu toàn bộ khối (kể cả ô bị merged/rỗng)
+ * AI SUPER-SCHEDULER V8.4
+ * Tính năng: Smart Search Grouping
+ * - Tìm "Thứ 5" sẽ hiện tất cả các dòng của thứ 5 (kể cả dòng bị gộp ô không có chữ).
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -173,18 +163,35 @@ const App = {
         return rows;
     },
 
+    // --- AI SMART SEARCH FILTER ---
     filterTable() {
         const input = document.getElementById("searchInput");
         const textFilter = input.value.toUpperCase();
         const table = document.querySelector("table.custom-schedule");
         if (!table) return;
+        
         const rows = table.querySelector("tbody").getElementsByTagName("tr");
         for (const row of rows) {
             if (row.classList.contains('no-results-row')) continue;
+            
+            // Lấy thông tin ẩn (đã được AI Grouping ở bước render)
             const rowDay = row.getAttribute('data-day');
+            const rowHiddenDay = rowDay ? rowDay.toUpperCase() : '';
+            const rowHiddenDate = row.getAttribute('data-date') ? row.getAttribute('data-date').toUpperCase() : '';
+            const rowVisibleText = row.textContent.toUpperCase();
+
+            // Logic Filter:
+            // 1. Filter theo Tab ngày (Thứ 2, Thứ 3...)
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
-            const textMatch = textFilter === "" || row.textContent.toUpperCase().includes(textFilter);
-            row.style.display = (dayMatch && textMatch) ? "" : "none";
+            
+            // 2. Filter theo thanh tìm kiếm (Smart Search)
+            // Tìm trong text hiển thị HOẶC tìm trong Thứ ẩn HOẶC tìm trong Ngày ẩn
+            const searchMatch = textFilter === "" || 
+                                rowVisibleText.includes(textFilter) || 
+                                rowHiddenDay.includes(textFilter) ||
+                                rowHiddenDate.includes(textFilter);
+            
+            row.style.display = (dayMatch && searchMatch) ? "" : "none";
         }
     },
 
@@ -274,7 +281,7 @@ const App = {
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
             const idxNgay = 1;
 
-            // --- AI UPGRADE: State Variable để nhớ ngày của dòng trước ---
+            // --- AI SMART GROUPING VARIABLES ---
             let lastSeenDate = '';
             let lastSeenDay = '';
 
@@ -282,22 +289,22 @@ const App = {
                 let dayText = (row[0] || '').trim();
                 let dateText = (row[idxNgay] || '').trim();
 
-                // Logic nhớ: Nếu dòng này có ngày, cập nhật. Nếu không, dùng ngày cũ.
+                // Logic nhớ: Nếu dòng này có dữ liệu, cập nhật bộ nhớ. Nếu không, dùng ký ức cũ.
                 if (dateText) lastSeenDate = dateText;
                 if (dayText) lastSeenDay = dayText;
 
-                // Dùng lastSeenDay để filter
                 if(lastSeenDay) uniqueDays.add(lastSeenDay);
                 
-                // Logic so sánh dựa trên lastSeenDate
+                // Logic Green Highlight (dựa trên ký ức)
                 let isToday = false;
                 if (lastSeenDate) {
                     isToday = todayFormats.some(fmt => lastSeenDate.includes(fmt));
                 }
                 const rowClass = isToday ? 'is-today' : '';
 
-                // Lưu ý: data-day attribute vẫn dùng lastSeenDay để filter hoạt động đúng
-                bodyHtml += `<tr data-day="${lastSeenDay}" class="${rowClass}">`;
+                // --- QUAN TRỌNG: Gắn thông tin vào Attribute để Search đọc được ---
+                bodyHtml += `<tr data-day="${lastSeenDay}" data-date="${lastSeenDate}" class="${rowClass}">`;
+                
                 headers.forEach((h, c) => {
                     if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
@@ -325,7 +332,6 @@ const App = {
             this.setupEventListeners();
             
             setTimeout(() => {
-                // Cuộn tới phần tử đầu tiên của ngày hôm nay
                 const todayRow = document.querySelector('tr.is-today');
                 if(todayRow) todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }, 500);
