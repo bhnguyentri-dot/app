@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V9.2 CLEAN</title>
+    <title>Lịch Công Tác BHS - V9.7 ULTIMATE</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -13,7 +13,6 @@
         body { margin: 0; padding: 0; background-color: #f4f6f9; scroll-behavior: smooth; }
         #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border-radius: 12px; }
         
-        /* HEADER & DASHBOARD */
         .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
         .schedule-header .sub-info { text-align: center; color: #555; margin-bottom: 20px; font-weight: 600; font-size: 16px; }
         
@@ -21,11 +20,10 @@
         .stat-card { background: white; padding: 12px 24px; border-radius: 10px; border-left: 5px solid #4472C4; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; transition: transform 0.2s; border: 1px solid #eee; }
         .stat-card span { color: #d32f2f; font-size: 1.3em; margin-left: 5px; font-weight: 800; }
         
-        /* TABLE STYLES */
         .table-responsive { overflow: auto; max-height: 75vh; border: 1px solid #e0e0e0; border-radius: 8px; position: relative; display: none; scrollbar-width: thin; }
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14.5px; background-color: white; }
         
-        /* --- HEADER CHUẨN MÀU TRẮNG --- */
+        /* HEADER */
         table.custom-schedule thead th { 
             background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); 
             color: #ffffff !important; 
@@ -37,59 +35,83 @@
             text-transform: uppercase; 
             position: sticky; 
             top: 0; 
-            z-index: 30; 
+            z-index: 40;
             vertical-align: middle;
         }
         
-        table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.6; }
+        table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 10px; vertical-align: top; color: #333; line-height: 1.6; }
 
-        /* --- CLASS ẨN HOÀN TOÀN (Dùng cho cột đầu tiên) --- */
-        .col-hidden { display: none !important; }
-
-        /* Cột Ngày (Cột thứ 2 -> Giờ thành cột đầu tiên hiển thị) */
-        table.custom-schedule td.col-sticky-date { 
+        /* --- CỘT SMART DATE (GỘP) --- */
+        table.custom-schedule td.col-smart-date { 
             background-color: #f0f7ff; 
-            font-weight: 700; 
-            text-align: center; 
             color: #1565c0; 
             position: sticky; 
-            left: 0; /* Dính sát lề trái vì cột trước nó đã bị ẩn */
-            z-index: 10; 
+            left: 0; 
+            z-index: 20; 
             border-right: 2px solid #b0bec5; 
+            padding: 0; /* Full box */
+            width: 140px;
+            min-width: 140px;
+            vertical-align: middle; /* Căn giữa dọc cho ô */
         }
 
-        /* Cột Thời gian */
-        table.custom-schedule td.col-time { 
+        /* --- NỘI DUNG TRONG Ô GỘP --- */
+        .smart-date-inner {
+            position: sticky; 
+            top: 55px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Căn giữa ngang */
+            justify-content: center; /* Căn giữa dọc */
+            height: 100%;
+            padding: 20px 5px;
+            box-sizing: border-box;
+        }
+
+        .date-day-label { 
+            font-size: 1.2em; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            margin-bottom: 6px; 
+            color: #333;
+            text-align: center;
+        }
+        .date-date-label { 
+            font-size: 1.3em; 
             font-weight: 700; 
-            text-align: center; 
-            white-space: nowrap; 
-            color: #c62828; 
-            background-color: #fff8f8; 
+            color: #1565c0; 
+            letter-spacing: 0.5px;
+            text-align: center;
         }
 
-        /* --- MOBILE LOGIC --- */
+        /* Cột Giờ */
+        table.custom-schedule td.col-time { 
+            font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; vertical-align: middle;
+        }
+
+        /* --- MOBILE --- */
         @media screen and (max-width: 768px) {
-            /* 1. Bỏ cố định cột Ngày trên điện thoại */
-            table.custom-schedule td.col-sticky-date, 
-            table.custom-schedule th.col-sticky-date {
+            table.custom-schedule td.col-smart-date, 
+            table.custom-schedule th.col-smart-date {
                 position: static !important;
                 z-index: 1 !important;
                 border-right: 1px solid #e0e0e0 !important;
+                width: auto !important;
+                min-width: 90px !important;
             }
+            .smart-date-inner { position: static; padding: 10px 2px; }
+            .date-day-label { font-size: 0.9em; }
             
-            /* 2. Cố định cột Thời Gian trên điện thoại */
             table.custom-schedule td.col-time,
             table.custom-schedule th.col-time {
                 position: sticky !important;
                 left: 0 !important;
-                z-index: 25 !important;
+                z-index: 30 !important;
                 border-right: 2px solid #888 !important;
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             }
-            table.custom-schedule thead th.col-time { z-index: 35 !important; }
-            table.custom-schedule td.col-time { background-color: #fff8f8; }
+            table.custom-schedule thead th.col-time { z-index: 50 !important; }
             
-            /* Màu cột thời gian sticky khi là Today */
             tr.is-today td.col-time {
                 background-color: #8fd19e !important;
                 color: #000 !important;
@@ -97,46 +119,26 @@
             }
         }
 
-        /* --- FULL GREEN BLOCK FOR TODAY --- */
-        tr.is-today td { 
-            background-color: #c3e6cb !important; 
-            color: #000 !important;
-            border-bottom: 1px solid #8fd19e !important; 
-        }
-        tr.is-today td.col-sticky-date {
-            background-color: #8fd19e !important; 
-            color: #064420 !important;
-            border-right: 2px solid #0f5132 !important; 
-        }
-        @media screen and (max-width: 768px) {
-            tr.is-today td.col-sticky-date { border-right: 1px solid #0f5132 !important; }
-        }
-
-        table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
+        /* --- TODAY HIGHLIGHT --- */
+        tr.is-today td { background-color: #c3e6cb !important; color: #000 !important; border-bottom: 1px solid #8fd19e !important; }
+        tr.is-today td.col-smart-date { background-color: #8fd19e !important; border-right: 2px solid #0f5132 !important; }
+        tr.is-today .date-date-label { color: #000 !important; } 
+        @media screen and (max-width: 768px) { tr.is-today td.col-smart-date { border-right: 1px solid #0f5132 !important; } }
+        table.custom-schedule tbody tr:hover td:not(.col-smart-date) { background-color: #fffce7; cursor: default; }
         
-        /* UTILS */
         .filter-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
         .filter-btn { padding: 8px 20px; border: 1px solid #ddd; background: white; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; }
         .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; }
-        
         #loading-state { text-align: center; padding: 50px; color: #4472C4; display: block; }
         .spinner { border: 4px solid rgba(68, 114, 196, 0.1); border-top: 4px solid #4472C4; border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 12px; display: none; }
         #searchInput { flex-grow: 1; padding: 12px 20px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
         .btn-print { background-color: #555; color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
         #install-app-btn { display: none; background: #000; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
-
-        /* TAG BGH */
-        .tag-bgh { 
-            background-color: #FFC000; color: #000; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
+        .tag-bgh { background-color: #FFC000; color: #000; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         #toast-notify { visibility: hidden; min-width: 300px; background: #198754; color: #fff; text-align: center; border-radius: 50px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 99999; font-size: 15px; opacity: 0; transition: opacity 0.5s; font-weight: bold; }
         #toast-notify.show { visibility: visible; opacity: 1; }
-        
         @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, #toast-notify, #install-app-btn { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
     </style>
 </head>
@@ -162,15 +164,13 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V9.2
- * - HIDDEN: First Column (Index 0) is now completely removed from view.
- * - LAYOUT: "Ngày" column becomes the first visible column (Sticky left).
+ * AI SUPER-SCHEDULER V9.7
+ * - FEATURE: ULTIMATE MERGE (Single Left Column).
+ * - LOGIC: Detects & Removes original "Day" and "Date" columns to avoid duplication.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
-
 const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ đầu tuần,Sân trường,BGH,Toàn trường,,THCS`;
-
 const TAG_COLOR_MAP = { "BGH": "tag-bgh" };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
@@ -232,22 +232,14 @@ const App = {
         const textFilter = input.value.toUpperCase();
         const table = document.querySelector("table.custom-schedule");
         if (!table) return;
-        
         const rows = table.querySelector("tbody").getElementsByTagName("tr");
         for (const row of rows) {
             if (row.classList.contains('no-results-row')) continue;
-            
             const rowDay = row.getAttribute('data-day');
-            const rowHiddenDay = rowDay ? rowDay.toUpperCase() : '';
-            const rowHiddenDate = row.getAttribute('data-date') ? row.getAttribute('data-date').toUpperCase() : '';
+            const rowHiddenDate = row.getAttribute('data-date') || '';
             const rowVisibleText = row.textContent.toUpperCase();
-
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
-            const searchMatch = textFilter === "" || 
-                                rowVisibleText.includes(textFilter) || 
-                                rowHiddenDay.includes(textFilter) ||
-                                rowHiddenDate.includes(textFilter);
-            
+            const searchMatch = textFilter === "" || rowVisibleText.includes(textFilter) || rowDay.toUpperCase().includes(textFilter) || rowHiddenDate.toUpperCase().includes(textFilter);
             row.style.display = (dayMatch && searchMatch) ? "" : "none";
         }
     },
@@ -291,7 +283,6 @@ const App = {
             this.processNewData(newCsv); 
             const toast = document.getElementById("toast-notify");
             if (toast) { toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 3000); }
-            
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({ type: 'SHOW_NOTIFICATION', title: 'Cập nhật', body: 'Lịch công tác mới' });
             }
@@ -306,8 +297,7 @@ const App = {
         const m = today.getMonth() + 1;
         const format1 = `${d < 10 ? '0' + d : d}/${m < 10 ? '0' + m : m}`;
         const format2 = `${d}/${m}`;
-        const format3 = `${d}/${m < 10 ? '0' + m : m}`;
-        return [format1, format2, format3];
+        return [format1, format2];
     },
 
     renderProfessionalTable(csvText, isDemo = false) {
@@ -323,7 +313,6 @@ const App = {
             }
 
             const todayFormats = this.getTodayString(); 
-
             const dashboardTarget = document.getElementById('ai-dashboard');
             dashboardTarget.innerHTML = `
                 <div class="stat-card">Sự kiện: <span>${bodyRows.length}</span></div>
@@ -332,29 +321,48 @@ const App = {
             `;
             dashboardTarget.style.display = "flex";
 
-            const spanMap = this.calculateRowSpans(bodyRows, headers);
-            let bodyHtml = ''; const uniqueDays = new Set();
+            // --- TỰ ĐỘNG DÒ TÌM INDEX CỘT ---
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
-            // Giả định cột "Ngày" là cột thứ 2 (Index 1) sau cột "Thứ" (Index 0)
-            const idxNgay = 1;
+            const idxThu = headers.findIndex(c => c.toLowerCase().includes('thứ'));
+            const idxNgay = headers.findIndex(c => c.toLowerCase().includes('ngày'));
 
-            let lastSeenDate = '';
-            let lastSeenDay = '';
+            // Tính toán Gộp dòng
+            const finalSpans = new Array(bodyRows.length).fill(0);
+            let start = 0;
+            for (let i = 1; i < bodyRows.length; i++) {
+                const prev = bodyRows[i-1];
+                const curr = bodyRows[i];
+                // So sánh cả Ngày và Thứ
+                const isSame = (prev[idxNgay]||'').trim() === (curr[idxNgay]||'').trim() && 
+                               (prev[idxThu]||'').trim() === (curr[idxThu]||'').trim();
+                
+                if (!isSame) {
+                    finalSpans[start] = i - start;
+                    start = i;
+                }
+            }
+            finalSpans[start] = bodyRows.length - start;
+            
+            const otherSpanMap = this.calculateRowSpans(bodyRows, headers);
+            let bodyHtml = ''; const uniqueDays = new Set();
+            let lastSeenDate = ''; let lastSeenDay = '';
 
-            const headerHtml = headers.map((h, i) => {
-                // --- ẨN CỘT ĐẦU TIÊN (INDEX 0) ---
-                const extraClass = (i === 0) ? 'col-hidden' : '';
-                return `<th class="${extraClass}">${h}</th>`;
-            }).join('');
+            // --- RENDER HEADER: BỎ CỘT THỨ, NGÀY VÀ CỘT RÁC (0) ---
+            let headerHtml = `<th class="col-smart-date">NGÀY / THỨ</th>`;
+            headers.forEach((h, i) => {
+                // Điều kiện loại bỏ: Cột 0 HOẶC Cột Thứ HOẶC Cột Ngày
+                if (i !== 0 && i !== idxThu && i !== idxNgay) { 
+                    headerHtml += `<th>${h}</th>`;
+                }
+            });
 
             bodyRows.forEach((row, rIdx) => {
-                let dayText = (row[0] || '').trim();
+                let dayText = (row[idxThu] || '').trim();
                 let dateText = (row[idxNgay] || '').trim();
 
                 if (dateText) lastSeenDate = dateText;
                 if (dayText) lastSeenDay = dayText;
-
                 if(lastSeenDay) uniqueDays.add(lastSeenDay);
                 
                 let isToday = false;
@@ -365,8 +373,23 @@ const App = {
 
                 bodyHtml += `<tr data-day="${lastSeenDay}" data-date="${lastSeenDate}" class="${rowClass}">`;
                 
+                // --- CỘT SMART MERGE ---
+                if (finalSpans[rIdx] > 0) {
+                    let shortDate = lastSeenDate.split('/').slice(0,2).join('/');
+                    bodyHtml += `<td class="col-smart-date" rowspan="${finalSpans[rIdx]}">
+                        <div class="smart-date-inner">
+                            <span class="date-day-label">${lastSeenDay}</span>
+                            <span class="date-date-label">${shortDate}</span>
+                        </div>
+                    </td>`;
+                }
+
+                // --- CÁC CỘT CÒN LẠI ---
                 headers.forEach((h, c) => {
-                    if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
+                    // Chặn hiển thị lại các cột đã gộp
+                    if (c === 0 || c === idxThu || c === idxNgay) return;
+
+                    if (otherSpanMap[rIdx] && otherSpanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
                     
                     if(c === idxChuTri) {
@@ -375,14 +398,10 @@ const App = {
                         content = `<span class="tag-bgh">${content}</span>`;
                     }
                     
-                    let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
-                    
-                    // --- ẨN CỘT ĐẦU TIÊN (INDEX 0) TRONG BODY ---
-                    if (c === 0) cls += ' col-hidden';
-                    
+                    let cls = (c===idxTime?'col-time':'');
                     if (c === idxChuTri) cls += ' align-center';
                     
-                    let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
+                    let rowspan = (otherSpanMap[rIdx][c] > 1) ? ` rowspan="${otherSpanMap[rIdx][c]}"` : '';
                     bodyHtml += `<td class="${cls}"${rowspan}>${content.replace(/\n/g, '<br>')}</td>`;
                 });
                 bodyHtml += `</tr>`;
@@ -410,13 +429,24 @@ const App = {
 
     calculateRowSpans(bodyRows, headers) {
         if (!bodyRows.length) return [];
-        const colsToMerge = [0, 1, headers.findIndex(c => c.toLowerCase().includes('thời gian'))].filter(i => i !== -1);
+        const colsToMerge = [headers.findIndex(c => c.toLowerCase().includes('thời gian'))].filter(i => i !== -1);
+        const idxNgay = headers.findIndex(c => c.toLowerCase().includes('ngày'));
         const spanMap = bodyRows.map(() => Array(headers.length).fill(1));
-        let start = 0;
-        for (let i = 1; i < bodyRows.length; i++) {
-            const match = colsToMerge.every(c => (bodyRows[i][c]||'').trim() === (bodyRows[i-1][c]||'').trim() && (bodyRows[i][c]||''));
-            if (match) { colsToMerge.forEach(c => { spanMap[i][c] = 0; spanMap[start][c]++; }); } else { start = i; }
-        }
+        colsToMerge.forEach(colIdx => {
+             let start = 0;
+             for (let i = 1; i < bodyRows.length; i++) {
+                 const prev = bodyRows[i-1];
+                 const curr = bodyRows[i];
+                 const valMatch = (prev[colIdx]||'').trim() === (curr[colIdx]||'').trim() && (curr[colIdx]||'');
+                 const dateMatch = (prev[idxNgay]||'').trim() === (curr[idxNgay]||'').trim();
+                 if (valMatch && dateMatch) {
+                     spanMap[i][colIdx] = 0;
+                     spanMap[start][colIdx]++;
+                 } else {
+                     start = i;
+                 }
+             }
+        });
         return spanMap;
     }
 };
