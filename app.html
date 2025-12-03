@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V9.2 CLEAN</title>
+    <title>Lịch Công Tác BHS - V9.3 WIDE DAY</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -43,8 +43,24 @@
         
         table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.6; }
 
-        /* --- CLASS ẨN HOÀN TOÀN (Dùng cho cột đầu tiên) --- */
+        /* --- CLASS ẨN CỘT ĐẦU TIÊN (INDEX 0) --- */
         .col-hidden { display: none !important; }
+
+        /* --- CLASS CỘT THỨ RỘNG (120px) --- */
+        .col-wide-thu {
+            min-width: 120px !important;
+            width: 120px !important;
+            text-align: center;
+        }
+        /* Style riêng cho nội dung cột Thứ (Màu xanh, đậm) */
+        td.col-wide-thu {
+            color: #1565c0 !important;
+            font-weight: 700 !important;
+        }
+        /* Style riêng cho Header cột Thứ (Màu trắng) */
+        th.col-wide-thu {
+            color: #ffffff !important;
+        }
 
         /* Cột Ngày (Cột thứ 2 -> Giờ thành cột đầu tiên hiển thị) */
         table.custom-schedule td.col-sticky-date { 
@@ -53,7 +69,7 @@
             text-align: center; 
             color: #1565c0; 
             position: sticky; 
-            left: 0; /* Dính sát lề trái vì cột trước nó đã bị ẩn */
+            left: 0; 
             z-index: 10; 
             border-right: 2px solid #b0bec5; 
         }
@@ -108,6 +124,11 @@
             color: #064420 !important;
             border-right: 2px solid #0f5132 !important; 
         }
+        /* Cột Thứ cũng đổi màu xanh đậm khi là Today */
+        tr.is-today td.col-wide-thu {
+            color: #064420 !important;
+        }
+
         @media screen and (max-width: 768px) {
             tr.is-today td.col-sticky-date { border-right: 1px solid #0f5132 !important; }
         }
@@ -162,9 +183,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V9.2
- * - HIDDEN: First Column (Index 0) is now completely removed from view.
- * - LAYOUT: "Ngày" column becomes the first visible column (Sticky left).
+ * AI SUPER-SCHEDULER V9.3
+ * - Hide Column Index 0 (Small garbage column).
+ * - Widen "Thứ" Column (120px) & Fix Header Color.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -336,15 +357,17 @@ const App = {
             let bodyHtml = ''; const uniqueDays = new Set();
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
-            // Giả định cột "Ngày" là cột thứ 2 (Index 1) sau cột "Thứ" (Index 0)
+            // AI Detect Column Index
+            const idxThu = headers.findIndex(c => c.toLowerCase().includes('thứ'));
             const idxNgay = 1;
 
             let lastSeenDate = '';
             let lastSeenDay = '';
 
             const headerHtml = headers.map((h, i) => {
-                // --- ẨN CỘT ĐẦU TIÊN (INDEX 0) ---
-                const extraClass = (i === 0) ? 'col-hidden' : '';
+                let extraClass = '';
+                if (i === 0) extraClass += ' col-hidden'; // Ẩn cột đầu tiên
+                if (i === idxThu) extraClass += ' col-wide-thu'; // Mở rộng cột Thứ
                 return `<th class="${extraClass}">${h}</th>`;
             }).join('');
 
@@ -377,9 +400,9 @@ const App = {
                     
                     let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
                     
-                    // --- ẨN CỘT ĐẦU TIÊN (INDEX 0) TRONG BODY ---
+                    // --- ÁP DỤNG CLASS ---
                     if (c === 0) cls += ' col-hidden';
-                    
+                    if (c === idxThu) cls += ' col-wide-thu';
                     if (c === idxChuTri) cls += ' align-center';
                     
                     let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
