@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - STYLE V8.7</title>
+    <title>Lịch Công Tác BHS - MOBILE FIX V8.9</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -26,23 +26,69 @@
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14.5px; background-color: white; }
         
         /* Sticky Header */
-        table.custom-schedule thead th { background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); color: white; padding: 16px 12px; text-align: center; border-right: 1px solid rgba(255,255,255,0.2); white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 20; }
+        table.custom-schedule thead th { background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); color: white; padding: 16px 12px; text-align: center; border-right: 1px solid rgba(255,255,255,0.2); white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 30; }
         table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.6; }
         
-        /* Sticky Date Column (Cột Ngày) */
-        table.custom-schedule td.col-sticky-date { background-color: #f0f7ff; font-weight: 700; text-align: center; color: #1565c0; position: sticky; left: 0; z-index: 10; border-right: 2px solid #b0bec5; }
-        
+        /* --- CLASS ẨN CỘT THỨ --- */
+        .col-hidden-completely { display: none !important; }
+
+        /* Cột Ngày (Mặc định PC: Sticky) */
+        table.custom-schedule td.col-sticky-date { 
+            background-color: #f0f7ff; 
+            font-weight: 700; 
+            text-align: center; 
+            color: #1565c0; 
+            position: sticky; 
+            left: 0; 
+            z-index: 10; 
+            border-right: 2px solid #b0bec5; 
+        }
+
         /* Cột Thời gian */
-        table.custom-schedule td.col-time { font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; }
-        
-        /* --- [NEW] CỘT THỨ (Màu xanh giống cột Ngày) --- */
-        .col-w-thu { 
-            min-width: 90px !important; 
-            width: 90px; 
-            color: #1565c0 !important; /* Màu xanh dương đậm giống cột Ngày */
-            font-weight: 700 !important; /* In đậm */
-            text-align: center;
-        } 
+        table.custom-schedule td.col-time { 
+            font-weight: 700; 
+            text-align: center; 
+            white-space: nowrap; 
+            color: #c62828; 
+            background-color: #fff8f8; 
+        }
+
+        /* --- MOBILE LOGIC (QUAN TRỌNG) --- */
+        @media screen and (max-width: 768px) {
+            /* 1. Bỏ cố định cột Ngày trên điện thoại */
+            table.custom-schedule td.col-sticky-date, 
+            table.custom-schedule th.col-sticky-date {
+                position: static !important;
+                z-index: 1 !important;
+                border-right: 1px solid #e0e0e0 !important;
+            }
+            
+            /* 2. Cố định cột Thời Gian trên điện thoại */
+            table.custom-schedule td.col-time,
+            table.custom-schedule th.col-time {
+                position: sticky !important;
+                left: 0 !important;
+                z-index: 25 !important;
+                border-right: 2px solid #888 !important;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            }
+
+            /* Fix header thời gian đè lên nội dung */
+            table.custom-schedule thead th.col-time {
+                z-index: 35 !important;
+            }
+
+            /* Fix màu nền cột thời gian khi sticky để không bị trong suốt */
+            table.custom-schedule td.col-time {
+                background-color: #fff8f8; 
+            }
+            /* Nếu là dòng Today, màu cột thời gian Sticky phải ăn theo màu xanh */
+            tr.is-today td.col-time {
+                background-color: #8fd19e !important;
+                color: #000 !important;
+                border-right: 2px solid #0f5132 !important;
+            }
+        }
 
         /* --- FULL GREEN BLOCK FOR TODAY --- */
         tr.is-today td { 
@@ -50,15 +96,18 @@
             color: #000 !important;
             border-bottom: 1px solid #8fd19e !important; 
         }
-        /* Khi là ngày hôm nay, cột Sticky Date vẫn giữ màu xanh đậm hơn của nó */
+        
         tr.is-today td.col-sticky-date {
             background-color: #8fd19e !important; 
             color: #064420 !important;
-            border-right: 2px solid #0f5132 !important;
+            border-right: 2px solid #0f5132 !important; /* Viền vẫn giữ trên PC */
         }
-        /* Khi là ngày hôm nay, cột Thứ cũng đổi sang màu xanh đậm của Today style */
-        tr.is-today td.col-w-thu {
-             color: #064420 !important;
+        
+        /* CSS reset border trên mobile cho cột ngày của dòng Today */
+        @media screen and (max-width: 768px) {
+            tr.is-today td.col-sticky-date {
+                border-right: 1px solid #0f5132 !important;
+            }
         }
 
         table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
@@ -78,15 +127,9 @@
         
         #install-app-btn { display: none; background: #000; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
 
-        /* --- TAG STYLE: CHỈ GIỮ BGH --- */
+        /* TAG BGH */
         .tag-bgh { 
-            background-color: #FFC000; 
-            color: #000; 
-            padding: 4px 10px; 
-            border-radius: 6px; 
-            font-weight: 800; 
-            display: inline-block; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: #FFC000; color: #000; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         #toast-notify { visibility: hidden; min-width: 300px; background: #198754; color: #fff; text-align: center; border-radius: 50px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 99999; font-size: 15px; opacity: 0; transition: opacity 0.5s; font-weight: bold; }
@@ -117,8 +160,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V8.7
- * Nâng cấp: Đồng bộ màu chữ cột "Thứ" giống cột "Ngày".
+ * AI SUPER-SCHEDULER V8.9
+ * - Hidden "Thứ" Column (Ẩn cột Thứ).
+ * - Mobile Optimized: Un-sticky Date, Sticky Time.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -297,7 +341,8 @@ const App = {
             let lastSeenDay = '';
 
             const headerHtml = headers.map((h, i) => {
-                const extraClass = (i === idxThu) ? 'col-w-thu' : '';
+                // --- XỬ LÝ ẨN CỘT THỨ ---
+                const extraClass = (i === idxThu) ? 'col-hidden-completely' : '';
                 return `<th class="${extraClass}">${h}</th>`;
             }).join('');
 
@@ -329,7 +374,10 @@ const App = {
                     }
                     
                     let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
-                    if (c === idxThu) cls += ' col-w-thu'; 
+                    
+                    // --- ÁP DỤNG CLASS ẨN ---
+                    if (c === idxThu) cls += ' col-hidden-completely';
+                    
                     if (c === idxChuTri) cls += ' align-center';
                     
                     let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
