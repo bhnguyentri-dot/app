@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - BGH FOCUS V8.5</title>
+    <title>Lịch Công Tác BHS - LAYOUT V8.6</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -33,6 +33,9 @@
         table.custom-schedule td.col-sticky-date { background-color: #f0f7ff; font-weight: 700; text-align: center; color: #1565c0; position: sticky; left: 0; z-index: 10; border-right: 2px solid #b0bec5; }
         table.custom-schedule td.col-time { font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; }
         
+        /* --- [NEW] CỘT THỨ RỘNG HƠN --- */
+        .col-w-thu { min-width: 90px !important; width: 90px; } 
+
         /* --- FULL GREEN BLOCK FOR TODAY --- */
         tr.is-today td { 
             background-color: #c3e6cb !important; 
@@ -101,15 +104,14 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V8.5
- * Tính năng: Clean View - Chỉ tô màu BGH, các chức danh khác hiển thị text thường.
+ * AI SUPER-SCHEDULER V8.6
+ * Nâng cấp: Widen "Thứ" Column (Tăng độ rộng cột Thứ)
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
 
 const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ đầu tuần,Sân trường,BGH,Toàn trường,,THCS`;
 
-// --- CẤU HÌNH MÀU SẮC (CHỈ GIỮ BGH) ---
 const TAG_COLOR_MAP = { "BGH": "tag-bgh" };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
@@ -166,7 +168,6 @@ const App = {
         return rows;
     },
 
-    // --- AI SMART SEARCH FILTER ---
     filterTable() {
         const input = document.getElementById("searchInput");
         const textFilter = input.value.toUpperCase();
@@ -183,7 +184,6 @@ const App = {
             const rowVisibleText = row.textContent.toUpperCase();
 
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
-            
             const searchMatch = textFilter === "" || 
                                 rowVisibleText.includes(textFilter) || 
                                 rowHiddenDay.includes(textFilter) ||
@@ -277,10 +277,18 @@ const App = {
             let bodyHtml = ''; const uniqueDays = new Set();
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
+            // AI Detect: Tìm cột Thứ để mở rộng
+            const idxThu = headers.findIndex(c => c.toLowerCase().includes('thứ'));
             const idxNgay = 1;
 
             let lastSeenDate = '';
             let lastSeenDay = '';
+
+            // Render HEADERS với style riêng cho cột Thứ
+            const headerHtml = headers.map((h, i) => {
+                const extraClass = (i === idxThu) ? 'col-w-thu' : '';
+                return `<th class="${extraClass}">${h}</th>`;
+            }).join('');
 
             bodyRows.forEach((row, rIdx) => {
                 let dayText = (row[0] || '').trim();
@@ -303,23 +311,23 @@ const App = {
                     if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
                     
-                    // --- XỬ LÝ MÀU TAG (CHỈ BGH) ---
                     if(c === idxChuTri) {
                         content = content.replace(TAG_REGEX, m => `<span class="${TAG_COLOR_MAP[m]}">${m}</span>`);
                     } else if (content === 'BGH') {
-                        // Trường hợp BGH nằm ở cột khác (nếu có)
                         content = `<span class="tag-bgh">${content}</span>`;
                     }
                     
                     let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
-                    if(c===idxChuTri) cls += ' align-center';
+                    if (c === idxThu) cls += ' col-w-thu'; // Thêm class mở rộng cho cột Thứ
+                    if (c === idxChuTri) cls += ' align-center';
+                    
                     let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
                     bodyHtml += `<td class="${cls}"${rowspan}>${content.replace(/\n/g, '<br>')}</td>`;
                 });
                 bodyHtml += `</tr>`;
             });
 
-            document.getElementById('main-table').innerHTML = `<table class="custom-schedule"><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
+            document.getElementById('main-table').innerHTML = `<table class="custom-schedule"><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
             
             let filtersHtml = `<button class="filter-btn active" onclick="App.setDayFilter('all', this)">Tất cả</button>`;
             uniqueDays.forEach(day => { if(day.length<25) filtersHtml += `<button class="filter-btn" onclick="App.setDayFilter('${day}', this)">${day}</button>`; });
