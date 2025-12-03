@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - SMART SEARCH V8.4</title>
+    <title>Lịch Công Tác BHS - BGH FOCUS V8.5</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -62,13 +62,16 @@
         
         #install-app-btn { display: none; background: #000; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
 
-        .tag-common { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85em; display: inline-block; margin: 2px; }
-        .tag-bgh { background-color: #FFC000; color: #000; }
-        .tag-tpt { background-color: #FFE699; color: #333; }
-        .tag-sgd { background-color: #9BC2E6; color: #003366; }
-        .tag-name-ht { background-color: #ffcdd2; color: #c62828; }
-        .tag-name-hp { background-color: #c8e6c9; color: #2e7d32; }
-        .tag-name-tt { background-color: #bbdefb; color: #1565c0; }
+        /* --- TAG STYLE: CHỈ GIỮ BGH --- */
+        .tag-bgh { 
+            background-color: #FFC000; 
+            color: #000; 
+            padding: 4px 10px; 
+            border-radius: 6px; 
+            font-weight: 800; 
+            display: inline-block; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
         #toast-notify { visibility: hidden; min-width: 300px; background: #198754; color: #fff; text-align: center; border-radius: 50px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 99999; font-size: 15px; opacity: 0; transition: opacity 0.5s; font-weight: bold; }
         #toast-notify.show { visibility: visible; opacity: 1; }
@@ -98,16 +101,16 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V8.4
- * Tính năng: Smart Search Grouping
- * - Tìm "Thứ 5" sẽ hiện tất cả các dòng của thứ 5 (kể cả dòng bị gộp ô không có chữ).
+ * AI SUPER-SCHEDULER V8.5
+ * Tính năng: Clean View - Chỉ tô màu BGH, các chức danh khác hiển thị text thường.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
 
 const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ đầu tuần,Sân trường,BGH,Toàn trường,,THCS`;
-const NAME_COLOR_MAP = { "Hiệu trưởng": "tag-name-ht", "HT": "tag-name-ht", "Hiệu phó": "tag-name-hp", "HP": "tag-name-hp", "Tổ trưởng": "tag-name-tt" };
-const TAG_COLOR_MAP = { "BGH": "tag-bgh", "TPT": "tag-tpt", "SGD": "tag-sgd", ...NAME_COLOR_MAP };
+
+// --- CẤU HÌNH MÀU SẮC (CHỈ GIỮ BGH) ---
+const TAG_COLOR_MAP = { "BGH": "tag-bgh" };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
 const App = {
@@ -174,18 +177,13 @@ const App = {
         for (const row of rows) {
             if (row.classList.contains('no-results-row')) continue;
             
-            // Lấy thông tin ẩn (đã được AI Grouping ở bước render)
             const rowDay = row.getAttribute('data-day');
             const rowHiddenDay = rowDay ? rowDay.toUpperCase() : '';
             const rowHiddenDate = row.getAttribute('data-date') ? row.getAttribute('data-date').toUpperCase() : '';
             const rowVisibleText = row.textContent.toUpperCase();
 
-            // Logic Filter:
-            // 1. Filter theo Tab ngày (Thứ 2, Thứ 3...)
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
             
-            // 2. Filter theo thanh tìm kiếm (Smart Search)
-            // Tìm trong text hiển thị HOẶC tìm trong Thứ ẩn HOẶC tìm trong Ngày ẩn
             const searchMatch = textFilter === "" || 
                                 rowVisibleText.includes(textFilter) || 
                                 rowHiddenDay.includes(textFilter) ||
@@ -281,7 +279,6 @@ const App = {
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
             const idxNgay = 1;
 
-            // --- AI SMART GROUPING VARIABLES ---
             let lastSeenDate = '';
             let lastSeenDay = '';
 
@@ -289,27 +286,30 @@ const App = {
                 let dayText = (row[0] || '').trim();
                 let dateText = (row[idxNgay] || '').trim();
 
-                // Logic nhớ: Nếu dòng này có dữ liệu, cập nhật bộ nhớ. Nếu không, dùng ký ức cũ.
                 if (dateText) lastSeenDate = dateText;
                 if (dayText) lastSeenDay = dayText;
 
                 if(lastSeenDay) uniqueDays.add(lastSeenDay);
                 
-                // Logic Green Highlight (dựa trên ký ức)
                 let isToday = false;
                 if (lastSeenDate) {
                     isToday = todayFormats.some(fmt => lastSeenDate.includes(fmt));
                 }
                 const rowClass = isToday ? 'is-today' : '';
 
-                // --- QUAN TRỌNG: Gắn thông tin vào Attribute để Search đọc được ---
                 bodyHtml += `<tr data-day="${lastSeenDay}" data-date="${lastSeenDate}" class="${rowClass}">`;
                 
                 headers.forEach((h, c) => {
                     if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
-                    if(c === idxChuTri) content = content.replace(TAG_REGEX, m => `<span class="tag-common ${TAG_COLOR_MAP[m]}">${m}</span>`);
-                    else if (['BGH','TPT','SGD'].includes(content)) content = `<span class="tag-common tag-${content.toLowerCase()}">${content}</span>`;
+                    
+                    // --- XỬ LÝ MÀU TAG (CHỈ BGH) ---
+                    if(c === idxChuTri) {
+                        content = content.replace(TAG_REGEX, m => `<span class="${TAG_COLOR_MAP[m]}">${m}</span>`);
+                    } else if (content === 'BGH') {
+                        // Trường hợp BGH nằm ở cột khác (nếu có)
+                        content = `<span class="tag-bgh">${content}</span>`;
+                    }
                     
                     let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
                     if(c===idxChuTri) cls += ' align-center';
