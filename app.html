@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V9.6 FINAL SMART</title>
+    <title>Lịch Công Tác BHS - V9.7 ULTIMATE</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -13,7 +13,6 @@
         body { margin: 0; padding: 0; background-color: #f4f6f9; scroll-behavior: smooth; }
         #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border-radius: 12px; }
         
-        /* HEADER & DASHBOARD */
         .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
         .schedule-header .sub-info { text-align: center; color: #555; margin-bottom: 20px; font-weight: 600; font-size: 16px; }
         
@@ -21,7 +20,6 @@
         .stat-card { background: white; padding: 12px 24px; border-radius: 10px; border-left: 5px solid #4472C4; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; transition: transform 0.2s; border: 1px solid #eee; }
         .stat-card span { color: #d32f2f; font-size: 1.3em; margin-left: 5px; font-weight: 800; }
         
-        /* TABLE STYLES */
         .table-responsive { overflow: auto; max-height: 75vh; border: 1px solid #e0e0e0; border-radius: 8px; position: relative; display: none; scrollbar-width: thin; }
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14.5px; background-color: white; }
         
@@ -43,7 +41,7 @@
         
         table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 10px; vertical-align: top; color: #333; line-height: 1.6; }
 
-        /* --- CỘT SMART DATE (STICKY) --- */
+        /* --- CỘT SMART DATE (GỘP) --- */
         table.custom-schedule td.col-smart-date { 
             background-color: #f0f7ff; 
             color: #1565c0; 
@@ -51,37 +49,44 @@
             left: 0; 
             z-index: 20; 
             border-right: 2px solid #b0bec5; 
-            padding: 0;
-            vertical-align: top; 
-            width: 130px;
-            min-width: 130px;
+            padding: 0; /* Full box */
+            width: 140px;
+            min-width: 140px;
+            vertical-align: middle; /* Căn giữa dọc cho ô */
         }
 
-        /* --- NỘI DUNG THÔNG MINH (CĂN GIỮA & TRƯỢT THEO) --- */
+        /* --- NỘI DUNG TRONG Ô GỘP --- */
         .smart-date-inner {
             position: sticky; 
-            top: 55px; /* Cách header một chút */
+            top: 55px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 15px 5px;
-            width: 100%;
-            height: 100%; /* Chiếm toàn bộ chiều cao ô */
+            align-items: center; /* Căn giữa ngang */
+            justify-content: center; /* Căn giữa dọc */
+            height: 100%;
+            padding: 20px 5px;
             box-sizing: border-box;
         }
 
-        .date-day-label { font-size: 1.1em; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 5px; color: #333; }
-        .date-date-label { font-size: 1.4em; font-weight: 700; display: block; color: #0d47a1; letter-spacing: -0.5px; }
+        .date-day-label { 
+            font-size: 1.2em; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            margin-bottom: 6px; 
+            color: #333;
+            text-align: center;
+        }
+        .date-date-label { 
+            font-size: 1.3em; 
+            font-weight: 700; 
+            color: #1565c0; 
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
 
         /* Cột Giờ */
         table.custom-schedule td.col-time { 
-            font-weight: 700; 
-            text-align: center; 
-            white-space: nowrap; 
-            color: #c62828; 
-            background-color: #fff8f8; 
-            vertical-align: middle;
+            font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; vertical-align: middle;
         }
 
         /* --- MOBILE --- */
@@ -94,9 +99,8 @@
                 width: auto !important;
                 min-width: 90px !important;
             }
-            .smart-date-inner { position: static; display: block; text-align: center; padding: 10px 2px; }
-            .date-day-label { font-size: 0.85em; margin-bottom: 2px; }
-            .date-date-label { font-size: 1.1em; }
+            .smart-date-inner { position: static; padding: 10px 2px; }
+            .date-day-label { font-size: 0.9em; }
             
             table.custom-schedule td.col-time,
             table.custom-schedule th.col-time {
@@ -107,7 +111,6 @@
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             }
             table.custom-schedule thead th.col-time { z-index: 50 !important; }
-            table.custom-schedule td.col-time { background-color: #fff8f8; }
             
             tr.is-today td.col-time {
                 background-color: #8fd19e !important;
@@ -117,47 +120,25 @@
         }
 
         /* --- TODAY HIGHLIGHT --- */
-        tr.is-today td { 
-            background-color: #c3e6cb !important; 
-            color: #000 !important;
-            border-bottom: 1px solid #8fd19e !important; 
-        }
-        
-        tr.is-today td.col-smart-date {
-            background-color: #8fd19e !important; 
-            border-right: 2px solid #0f5132 !important; 
-        }
+        tr.is-today td { background-color: #c3e6cb !important; color: #000 !important; border-bottom: 1px solid #8fd19e !important; }
+        tr.is-today td.col-smart-date { background-color: #8fd19e !important; border-right: 2px solid #0f5132 !important; }
         tr.is-today .date-date-label { color: #000 !important; } 
-
-        @media screen and (max-width: 768px) {
-            tr.is-today td.col-smart-date { border-right: 1px solid #0f5132 !important; }
-        }
-
+        @media screen and (max-width: 768px) { tr.is-today td.col-smart-date { border-right: 1px solid #0f5132 !important; } }
         table.custom-schedule tbody tr:hover td:not(.col-smart-date) { background-color: #fffce7; cursor: default; }
         
-        /* UTILS */
         .filter-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
         .filter-btn { padding: 8px 20px; border: 1px solid #ddd; background: white; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; }
         .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; }
-        
         #loading-state { text-align: center; padding: 50px; color: #4472C4; display: block; }
         .spinner { border: 4px solid rgba(68, 114, 196, 0.1); border-top: 4px solid #4472C4; border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 12px; display: none; }
         #searchInput { flex-grow: 1; padding: 12px 20px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
         .btn-print { background-color: #555; color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
         #install-app-btn { display: none; background: #000; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
-
-        /* TAG BGH */
-        .tag-bgh { 
-            background-color: #FFC000; color: #000; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
+        .tag-bgh { background-color: #FFC000; color: #000; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         #toast-notify { visibility: hidden; min-width: 300px; background: #198754; color: #fff; text-align: center; border-radius: 50px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 99999; font-size: 15px; opacity: 0; transition: opacity 0.5s; font-weight: bold; }
         #toast-notify.show { visibility: visible; opacity: 1; }
-        
         @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, #toast-notify, #install-app-btn { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
     </style>
 </head>
@@ -183,15 +164,13 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V9.6
- * - Fix Column Indices: Hide 0 (Garbage), 1 (Date), 2 (Day).
- * - Smart Merge: Correctly grab Day/Date data for the Smart Column.
+ * AI SUPER-SCHEDULER V9.7
+ * - FEATURE: ULTIMATE MERGE (Single Left Column).
+ * - LOGIC: Detects & Removes original "Day" and "Date" columns to avoid duplication.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
-
 const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ đầu tuần,Sân trường,BGH,Toàn trường,,THCS`;
-
 const TAG_COLOR_MAP = { "BGH": "tag-bgh" };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
@@ -253,21 +232,14 @@ const App = {
         const textFilter = input.value.toUpperCase();
         const table = document.querySelector("table.custom-schedule");
         if (!table) return;
-        
         const rows = table.querySelector("tbody").getElementsByTagName("tr");
         for (const row of rows) {
             if (row.classList.contains('no-results-row')) continue;
-            
             const rowDay = row.getAttribute('data-day');
-            const rowHiddenDate = row.getAttribute('data-date') ? row.getAttribute('data-date').toUpperCase() : '';
+            const rowHiddenDate = row.getAttribute('data-date') || '';
             const rowVisibleText = row.textContent.toUpperCase();
-
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
-            const searchMatch = textFilter === "" || 
-                                rowVisibleText.includes(textFilter) || 
-                                rowDay.toUpperCase().includes(textFilter) ||
-                                rowHiddenDate.includes(textFilter);
-            
+            const searchMatch = textFilter === "" || rowVisibleText.includes(textFilter) || rowDay.toUpperCase().includes(textFilter) || rowHiddenDate.toUpperCase().includes(textFilter);
             row.style.display = (dayMatch && searchMatch) ? "" : "none";
         }
     },
@@ -311,7 +283,6 @@ const App = {
             this.processNewData(newCsv); 
             const toast = document.getElementById("toast-notify");
             if (toast) { toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 3000); }
-            
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({ type: 'SHOW_NOTIFICATION', title: 'Cập nhật', body: 'Lịch công tác mới' });
             }
@@ -326,8 +297,7 @@ const App = {
         const m = today.getMonth() + 1;
         const format1 = `${d < 10 ? '0' + d : d}/${m < 10 ? '0' + m : m}`;
         const format2 = `${d}/${m}`;
-        const format3 = `${d}/${m < 10 ? '0' + m : m}`;
-        return [format1, format2, format3];
+        return [format1, format2];
     },
 
     renderProfessionalTable(csvText, isDemo = false) {
@@ -343,7 +313,6 @@ const App = {
             }
 
             const todayFormats = this.getTodayString(); 
-
             const dashboardTarget = document.getElementById('ai-dashboard');
             dashboardTarget.innerHTML = `
                 <div class="stat-card">Sự kiện: <span>${bodyRows.length}</span></div>
@@ -352,20 +321,19 @@ const App = {
             `;
             dashboardTarget.style.display = "flex";
 
-            // --- CORRECT INDEX MAPPING ---
-            // Dựa trên ảnh của bạn: 0=Rác, 1=Ngày, 2=Thứ, 3=Thời gian...
+            // --- TỰ ĐỘNG DÒ TÌM INDEX CỘT ---
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
-            const idxNgay = 1;
-            const idxThu = 2; // Cột thứ 3 là Thứ
+            const idxThu = headers.findIndex(c => c.toLowerCase().includes('thứ'));
+            const idxNgay = headers.findIndex(c => c.toLowerCase().includes('ngày'));
 
-            // Tính toán Rowspan
+            // Tính toán Gộp dòng
             const finalSpans = new Array(bodyRows.length).fill(0);
             let start = 0;
             for (let i = 1; i < bodyRows.length; i++) {
                 const prev = bodyRows[i-1];
                 const curr = bodyRows[i];
-                // So sánh cả Ngày (1) và Thứ (2)
+                // So sánh cả Ngày và Thứ
                 const isSame = (prev[idxNgay]||'').trim() === (curr[idxNgay]||'').trim() && 
                                (prev[idxThu]||'').trim() === (curr[idxThu]||'').trim();
                 
@@ -380,17 +348,18 @@ const App = {
             let bodyHtml = ''; const uniqueDays = new Set();
             let lastSeenDate = ''; let lastSeenDay = '';
 
-            // --- HEADER RENDER: Bỏ 0, 1, 2 ---
+            // --- RENDER HEADER: BỎ CỘT THỨ, NGÀY VÀ CỘT RÁC (0) ---
             let headerHtml = `<th class="col-smart-date">NGÀY / THỨ</th>`;
             headers.forEach((h, i) => {
-                if (i !== 0 && i !== 1 && i !== 2) { 
+                // Điều kiện loại bỏ: Cột 0 HOẶC Cột Thứ HOẶC Cột Ngày
+                if (i !== 0 && i !== idxThu && i !== idxNgay) { 
                     headerHtml += `<th>${h}</th>`;
                 }
             });
 
             bodyRows.forEach((row, rIdx) => {
-                let dayText = (row[idxThu] || '').trim(); // Lấy từ cột 2
-                let dateText = (row[idxNgay] || '').trim(); // Lấy từ cột 1
+                let dayText = (row[idxThu] || '').trim();
+                let dateText = (row[idxNgay] || '').trim();
 
                 if (dateText) lastSeenDate = dateText;
                 if (dayText) lastSeenDay = dayText;
@@ -417,7 +386,8 @@ const App = {
 
                 // --- CÁC CỘT CÒN LẠI ---
                 headers.forEach((h, c) => {
-                    if (c === 0 || c === 1 || c === 2) return; // Bỏ qua 3 cột đầu
+                    // Chặn hiển thị lại các cột đã gộp
+                    if (c === 0 || c === idxThu || c === idxNgay) return;
 
                     if (otherSpanMap[rIdx] && otherSpanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
@@ -460,7 +430,7 @@ const App = {
     calculateRowSpans(bodyRows, headers) {
         if (!bodyRows.length) return [];
         const colsToMerge = [headers.findIndex(c => c.toLowerCase().includes('thời gian'))].filter(i => i !== -1);
-        const idxNgay = 1; 
+        const idxNgay = headers.findIndex(c => c.toLowerCase().includes('ngày'));
         const spanMap = bodyRows.map(() => Array(headers.length).fill(1));
         colsToMerge.forEach(colIdx => {
              let start = 0;
