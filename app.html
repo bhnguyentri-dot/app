@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v6.3 - Auto Update 1m</title>
+    <title>Lịch Công Tác Thông Minh v6.4 - Final Fix</title>
     <style>
         /* --- CORE RESET & FONT --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
@@ -17,30 +17,13 @@
         .dashboard-panel { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
         .stat-card { background: linear-gradient(135deg, #f6f9fc 0%, #eef2f3 100%); padding: 10px 20px; border-radius: 8px; border-left: 5px solid #4472C4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; }
         .stat-card span { color: #d32f2f; font-size: 1.2em; margin-left: 5px; }
-        .stat-card.alert-mode { border-left-color: #d32f2f; background: #fff0f0; color: #d32f2f; }
-        #notification-control { cursor: pointer; }
-
-        /* --- SMART FILTER TABS --- */
-        .filter-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
-        .filter-btn {
-            padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px;
-            cursor: pointer; font-size: 14px; font-weight: 600; color: #555; transition: all 0.2s;
+        
+        /* Button Test Thông Báo */
+        .btn-test-notify {
+            background-color: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 20px;
+            cursor: pointer; font-size: 12px; margin-left: 10px; font-weight: bold;
         }
-        .filter-btn:hover { background: #f0f0f0; }
-        .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; box-shadow: 0 4px 10px rgba(68, 114, 196, 0.3); }
-
-        /* --- LOADING --- */
-        #loading-state { text-align: center; padding: 40px; color: #007bff; display: block; }
-        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error-msg { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 5px; border: 1px solid #ffcdd2; margin-top: 10px; display: inline-block; font-weight: bold; }
-
-        /* --- TOOLS --- */
-        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; display: none; }
-        #searchInput { flex-grow: 1; padding: 12px 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
-        #searchInput:focus { border-color: #4472C4; outline: none; }
-        .btn-print { background-color: #4472C4; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; white-space: nowrap; }
-        .btn-print:hover { background-color: #365a9e; }
+        .btn-test-notify:hover { background-color: #218838; }
 
         /* --- TABLE --- */
         .table-responsive { overflow: auto; max-height: 80vh; border: 1px solid #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-radius: 4px; position: relative; display: none; }
@@ -56,56 +39,40 @@
         tr.row-thcs td:not(.col-sticky-date) { background-color: #DDEBF7; }
         table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
 
-        /* No results row */
-        .no-results-row td { text-align: center; font-style: italic; color: #777; padding: 20px; background-color: #fafafa !important; }
+        /* Filter Tabs */
+        .filter-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
+        .filter-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; }
+        .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; }
+
+        /* Loading */
+        #loading-state { text-align: center; padding: 40px; color: #007bff; display: block; }
+        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Search */
+        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; display: none; }
+        #searchInput { flex-grow: 1; padding: 12px 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .btn-print { background-color: #4472C4; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
 
         /* Tags */
-        .tag-common { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.9em; display: inline-block; margin: 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .tag-common { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.9em; display: inline-block; margin: 2px; }
         .tag-bgh { background-color: #FFC000; color: #000; }
         .tag-tpt { background-color: #FFE699; color: #333; }
         .tag-sgd { background-color: #9BC2E6; color: #003366; }
-
-        /* Tags cho tên người chủ trì */
         .tag-name-ht { background-color: #ffcdd2; color: #c62828; }
         .tag-name-hp { background-color: #c8e6c9; color: #2e7d32; }
         .tag-name-tt { background-color: #bbdefb; color: #1565c0; }
         .tag-name-gv { background-color: #f5f5f5; color: #424242; border: 1px solid #e0e0e0;}
 
-        /* --- UPDATE NOTIFICATION --- */
-        .update-notification {
-            background-color: #28a745; /* Green for success */
-            color: white;
-            text-align: center;
-            padding: 15px;
-            font-weight: bold;
-            border-radius: 8px;
-            position: fixed; /* Nổi trên nội dung */
-            top: 20px;
-            left: 50%;
-            transform: translate(-50%, -150%); /* Ẩn ở trên và căn giữa */
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: transform 0.5s ease-in-out;
-            cursor: pointer;
-        }
-        .update-notification.show {
-            transform: translate(-50%, 0); /* Trượt xuống để hiện ra */
-        }
-
         @media print {
-            body { background: white; }
-            #schedule-container { box-shadow: none; width: 100%; margin: 0; padding: 0; max-width: none; }
-            .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print { display: none !important; }
+            .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, .btn-test-notify { display: none !important; }
             .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; }
-            table.custom-schedule th { background-color: #ccc !important; color: black !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
 
 <div id="schedule-container">
-    <div id="update-notification" class="update-notification"></div>
-
     <div id="top-info" class="schedule-header"></div>
     
     <div id="ai-dashboard" class="dashboard-panel"></div>
@@ -118,8 +85,8 @@
     </div>
 
     <div id="search-area" class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm nội dung cụ thể trong lịch..." title="Nhập từ khóa để tìm kiếm">
-        <button onclick="window.print()" class="btn-print" title="In hoặc xuất ra PDF">🖨️ In Lịch</button>
+        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm nội dung cụ thể trong lịch...">
+        <button onclick="window.print()" class="btn-print">🖨️ In Lịch</button>
     </div>
 
     <div id="main-table" class="table-responsive"></div>
@@ -127,50 +94,30 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER v6.3
- * Tính năng: Lịch thông minh & Tự động cập nhật sau 1 phút
+ * AI SUPER-SCHEDULER v6.4
+ * Sửa lỗi: Gộp code vào script, thêm nút Test Notification
  */
 const CONFIG = {
     sheetID: '2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A',
     sheetGid: '2028559314',
-    proxies: [
-        'https://api.codetabs.com/v1/proxy?quest=',
-        'https://api.allorigins.win/raw?url=',
-        'https://corsproxy.io/?'
-    ]
+    proxies: ['https://api.codetabs.com/v1/proxy?quest=', 'https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?']
 };
 
-const FALLBACK_DATA = `
-LỊCH CÔNG TÁC TUẦN (CHẾ ĐỘ OFFLINE)
-Từ ngày 01/01 đến 07/01
-Thứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối
-Hai,01/01,07:00,Chào cờ (Mẫu),Sân trường,BGH,Toàn trường,,THCS
-Hai,01/01,08:00,Họp BGH,Phòng HT,BGH,BGH,,TH
-Ba,02/01,14:00,Tập huấn,Hội trường,SGD,GV,,THCS
-`;
+const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ,Sân trường,BGH,Toàn trường,,THCS`;
 
-const NAME_COLOR_MAP = {
-    "Hiệu trưởng": "tag-name-ht", "HT": "tag-name-ht",
-    "Hiệu phó": "tag-name-hp", "HP": "tag-name-hp",
-    "Tổ trưởng": "tag-name-tt"
-};
-
-const TAG_COLOR_MAP = {
-    "BGH": "tag-bgh", "TPT": "tag-tpt", "SGD": "tag-sgd",
-    ...NAME_COLOR_MAP
-};
+const NAME_COLOR_MAP = { "Hiệu trưởng": "tag-name-ht", "HT": "tag-name-ht", "Hiệu phó": "tag-name-hp", "HP": "tag-name-hp", "Tổ trưởng": "tag-name-tt" };
+const TAG_COLOR_MAP = { "BGH": "tag-bgh", "TPT": "tag-tpt", "SGD": "tag-sgd", ...NAME_COLOR_MAP };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
 const App = {
     currentFilterDay: 'all',
-    filterTimeout: null,
     CACHE_KEY: 'smart_schedule_cache_v1',
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
-            // Chiến thuật Smart Cache: Hiển thị cache trước, tải mới sau
             this.loadFromCache();
             this.loadScheduleData();
+            initGitHubUpdateTracker(); // Khởi động hệ thống check update
         });
     },
 
@@ -178,64 +125,18 @@ const App = {
         const searchInput = document.getElementById('searchInput');
         if(searchInput) {
             searchInput.addEventListener('keyup', () => {
-                clearTimeout(this.filterTimeout);
-                this.filterTimeout = setTimeout(() => this.filterTable(), 300);
+                setTimeout(() => this.filterTable(), 300);
             });
         }
-
-        const notification = document.getElementById('update-notification');
-        if (notification) {
-            notification.addEventListener('click', () => {
-                notification.classList.remove('show');
-            });
-        }
-    },
-
-    setupNotifications() {
-        const control = document.getElementById('notification-control');
-        if (!control || !('Notification' in window)) {
-            if(control) control.style.display = 'none';
-            return;
-        }
-
-        const updateStatus = (permission) => {
-            const statusEl = document.getElementById('notification-status');
-            if (!statusEl) return;
-            if (permission === 'granted') {
-                statusEl.textContent = '✅ Đã bật thông báo';
-                control.style.borderLeftColor = '#28a745';
-            } else if (permission === 'denied') {
-                statusEl.textContent = '🚫 Đã chặn thông báo';
-                control.style.borderLeftColor = '#d32f2f';
-            } else {
-                statusEl.textContent = '🔔 Bật thông báo trình duyệt';
-                control.style.borderLeftColor = '#fbc02d';
-            }
-        };
-
-        updateStatus(Notification.permission);
-
-        control.addEventListener('click', () => Notification.requestPermission().then(updateStatus));
-    },
-
-    showError(msg) {
-        const loadingEl = document.getElementById('loading-state');
-        if (loadingEl) loadingEl.innerHTML = `<div class="error-msg">⚠️ ${msg}</div>`;
     },
 
     parseCSV(text) {
-        const rows = [];
-        let currentRow = [];
-        let currentVal = '';
-        let inQuote = false;
+        const rows = []; let currentRow = []; let currentVal = ''; let inQuote = false;
         for (let i = 0; i < text.length; i++) {
             const char = text[i], nextChar = text[i + 1];
             if (char === '"') { inQuote ? (nextChar === '"' ? (currentVal += '"', i++) : inQuote = !inQuote) : inQuote = !inQuote; } 
             else if (char === ',' && !inQuote) { currentRow.push(currentVal); currentVal = ''; } 
-            else if ((char === '\r' || char === '\n') && !inQuote) { 
-                if (char === '\r' && nextChar === '\n') i++; 
-                currentRow.push(currentVal); rows.push(currentRow); currentRow = []; currentVal = ''; 
-            } else { currentVal += char; }
+            else if ((char === '\r' || char === '\n') && !inQuote) { if (char === '\r' && nextChar === '\n') i++; currentRow.push(currentVal); rows.push(currentRow); currentRow = []; currentVal = ''; } else { currentVal += char; }
         }
         if (currentRow.length > 0 || currentVal !== '') { currentRow.push(currentVal); rows.push(currentRow); }
         return rows;
@@ -246,35 +147,13 @@ const App = {
         const textFilter = input.value.toUpperCase();
         const table = document.querySelector("table.custom-schedule");
         if (!table) return;
-
         const rows = table.querySelector("tbody").getElementsByTagName("tr");
-        let visibleRowCount = 0;
-
         for (const row of rows) {
             if (row.classList.contains('no-results-row')) continue;
             const rowDay = row.getAttribute('data-day');
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
             const textMatch = textFilter === "" || row.textContent.toUpperCase().includes(textFilter);
-
-            if (dayMatch && textMatch) {
-                row.style.display = "";
-                visibleRowCount++;
-            } else {
-                row.style.display = "none";
-            }
-        }
-
-        let noResultsRow = table.querySelector('.no-results-row');
-        if (visibleRowCount === 0) {
-            if (!noResultsRow) {
-                noResultsRow = table.querySelector("tbody").insertRow();
-                noResultsRow.className = 'no-results-row';
-                const colCount = table.querySelector('thead th') ? table.querySelector('thead th').length : 9;
-                noResultsRow.innerHTML = `<td colspan="${colCount}">Không tìm thấy nội dung phù hợp.</td>`;
-            }
-            noResultsRow.style.display = "";
-        } else if (noResultsRow) {
-            noResultsRow.style.display = "none";
+            row.style.display = (dayMatch && textMatch) ? "" : "none";
         }
     },
 
@@ -289,256 +168,135 @@ const App = {
 
     loadFromCache() {
         const cached = localStorage.getItem(this.CACHE_KEY);
-        if (cached) {
-            console.log("Loading from Smart Cache...");
-            this.renderProfessionalTable(cached, false);
-        }
+        if (cached) this.renderProfessionalTable(cached, false);
     },
 
     loadScheduleData() {
         const sourceUrl = `https://docs.google.com/spreadsheets/d/e/${CONFIG.sheetID}/pub?gid=${CONFIG.sheetGid}&single=true&output=csv`;
-        
-        // Thử proxy 1
         fetch(CONFIG.proxies[0] + encodeURIComponent(sourceUrl))
-            .then(res => { if (!res.ok) throw new Error("Proxy 1 failed"); return res.text(); })
+            .then(res => res.ok ? res.text() : Promise.reject())
             .then(csv => this.processNewData(csv))
-            .catch(err => {
-                console.warn("Chuyển sang Proxy 2...", err);
-                // Thử proxy 2
+            .catch(() => {
                 fetch(CONFIG.proxies[1] + encodeURIComponent(sourceUrl))
-                    .then(r => { if (!r.ok) throw new Error("Proxy 2 failed"); return r.text(); })
+                    .then(r => r.ok ? r.text() : Promise.reject())
                     .then(csv => this.processNewData(csv))
-                    .catch(() => { 
-                        // Nếu thất bại hết, chỉ hiện Fallback nếu chưa có cache
-                        if(!localStorage.getItem(this.CACHE_KEY)) {
-                            this.renderProfessionalTable(FALLBACK_DATA, true); 
-                        }
-                    });
+                    .catch(() => { if(!localStorage.getItem(this.CACHE_KEY)) this.renderProfessionalTable(FALLBACK_DATA, true); });
             });
     },
 
     processNewData(newCsv) {
         const oldCsv = localStorage.getItem(this.CACHE_KEY);
-        
-        // Nếu có dữ liệu cũ và dữ liệu mới khác dữ liệu cũ -> có cập nhật
         if (oldCsv && oldCsv !== newCsv) {
-            const notification = document.getElementById('update-notification');
-            if (notification && !notification.classList.contains('show')) {
-                notification.innerText = '✨ Lịch công tác vừa được cập nhật!';
-                notification.classList.add('show');
-                // Tự động ẩn sau 5 giây
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 5000);
-
-                // Gửi thông báo gốc của trình duyệt nếu được phép
-                if ('Notification' in window && Notification.permission === 'granted') {
-                    const iconUrl = 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
-                    new Notification('Lịch Công Tác', { body: 'Vừa có cập nhật mới!', icon: iconUrl, tag: 'schedule-update' });
-                }
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Lịch Công Tác', { body: 'Dữ liệu lịch đã thay đổi!', icon: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png' });
             }
         }
-
-        localStorage.setItem(this.CACHE_KEY, newCsv); // Lưu dữ liệu mới vào cache
-        this.renderProfessionalTable(newCsv); // Hiển thị dữ liệu mới
-    },
-
-    // --- LOGIC FUNCTIONS (Đã được sửa lỗi cú pháp) ---
-    calculateRowSpans(bodyRows, headers) {
-        if (!bodyRows || bodyRows.length === 0) return [];
-
-        // Xác định các cột cần gộp nhóm
-        const idxDay = 0; // Thứ
-        const idxDate = 1; // Ngày
-        const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
-        const colsToMerge = [idxDay, idxDate, idxTime].filter(i => i !== -1);
-
-        // Khởi tạo map cho tất cả các cột
-        const spanMap = bodyRows.map(() => Array(headers.length).fill(1));
-        let currentSpanStart = 0;
-
-        for (let i = 1; i < bodyRows.length; i++) {
-            // Kiểm tra xem tất cả các cột cần gộp có giống nhau không
-            const shouldMerge = colsToMerge.every(colIdx => {
-                const prev = (bodyRows[i - 1][colIdx] || '').trim();
-                const cur = (bodyRows[i][colIdx] || '').trim();
-                return cur === prev && cur !== '';
-            });
-
-            if (shouldMerge) {
-                colsToMerge.forEach(colIdx => {
-                    spanMap[i][colIdx] = 0;
-                    spanMap[currentSpanStart][colIdx]++;
-                });
-            } else {
-                currentSpanStart = i;
-            }
-        }
-        return spanMap;
-    },
-
-    applyColorTags(text, isChuTriColumn) {
-        if (!text) return '';
-        if (!isChuTriColumn) {
-            return text
-                .replace(/\bBGH\b/g, '<span class="tag-common tag-bgh">BGH</span>')
-                .replace(/\bTPT\b/g, '<span class="tag-common tag-tpt">TPT</span>')
-                .replace(/\bSGD\b/g, '<span class="tag-common tag-sgd">SGD</span>');
-        }
-        return text.replace(TAG_REGEX, (match) => `<span class="tag-common ${TAG_COLOR_MAP[match]}">${match}</span>`);
-    },
-
-    buildTableBody(bodyRows, headers) {
-        const spanMap = this.calculateRowSpans(bodyRows, headers);
-        const uniqueDays = new Set();
-        let currentDayValue = '';
-
-        const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
-        const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
-        const idxKhoi = headers.length - 1;
-
-        let bodyHtml = '';
-        bodyRows.forEach((row, rIdx) => {
-            let rawDay = (row[0] || '').trim();
-            if (rawDay !== '') {
-                currentDayValue = rawDay;
-                uniqueDays.add(rawDay);
-            }
-
-            let rowClass = '';
-            const khoiVal = (row[idxKhoi] || '').toUpperCase();
-            if (khoiVal.includes('THCS')) rowClass = 'row-thcs';
-            else if (khoiVal.includes('TH')) rowClass = 'row-th';
-
-            bodyHtml += `<tr class="${rowClass}" data-day="${this.escapeHtml(currentDayValue)}">`;
-
-            for (let c = 0; c < headers.length; c++) {
-                let cellData = (row[c] || '').trim();
-                let cellContent = this.escapeHtml(cellData).replace(/\n/g, '<br>');
-                let cellClass = '';
-                let rowspanAttr = '';
-
-                // Logic gộp ô (rowspan) đã được nâng cấp
-                if (spanMap[rIdx] && spanMap[rIdx][c] === 0) continue;
-                if (spanMap[rIdx] && spanMap[rIdx][c] > 1) rowspanAttr = ` rowspan="${spanMap[rIdx][c]}"`;
-
-                if (c === 0 || c === 1) {
-                    cellClass = 'col-sticky-date';
-                }
-                if (c === idxTime) cellClass += ' col-time';
-                if (c === idxChuTri) cellClass += ' align-center';
-
-                bodyHtml += `<td class="${cellClass.trim()}"${rowspanAttr}>${this.applyColorTags(cellContent, c === idxChuTri)}</td>`;
-            }
-            bodyHtml += '</tr>';
-        });
-
-        return { bodyHtml, uniqueDays };
+        localStorage.setItem(this.CACHE_KEY, newCsv);
+        this.renderProfessionalTable(newCsv);
     },
 
     renderProfessionalTable(csvText, isDemo = false) {
         try {
             const rawData = this.parseCSV(csvText);
-            // Tìm dòng tiêu đề chứa chữ "Thứ"
             const headerRowIndex = rawData.findIndex(row => row.some(c => c && c.toLowerCase().includes('thứ'))) || 0;
+            if (headerRowIndex === -1 || rawData.length < headerRowIndex + 2) throw new Error("Dữ liệu CSV lỗi.");
             
-            if (headerRowIndex === -1 || rawData.length < headerRowIndex + 2) {
-                throw new Error("Dữ liệu CSV không đúng định dạng lịch.");
-            }
-
             const headers = rawData[headerRowIndex];
             const bodyRows = rawData.slice(headerRowIndex + 1).filter(r => !r.every(c => c.trim() === ''));
-
-            // UI Elements
+            
+            // Xây dựng Header Info
             const headerTarget = document.getElementById('top-info');
-            const dashboardTarget = document.getElementById('ai-dashboard');
-            const filtersTarget = document.getElementById('day-filters');
-
-            // 1. Top Info Header
             if (!isDemo && headerRowIndex > 0) {
                 let topHtml = '';
                 for (let i = 0; i < headerRowIndex; i++) {
                     const info = rawData[i].filter(c => c.trim() !== '').join(' - ');
-                    if (info) topHtml += (topHtml === '') ? `<h2>${this.escapeHtml(info)}</h2>` : `<div class="sub-info">${this.escapeHtml(info)}</div>`;
+                    if (info) topHtml += (topHtml === '') ? `<h2>${info}</h2>` : `<div class="sub-info">${info}</div>`;
                 }
                 headerTarget.innerHTML = topHtml;
             }
 
-            // 2. Dashboard Stat
-            if (isDemo) {
-                dashboardTarget.innerHTML = `<div class="stat-card alert-mode">⚠️ CHẾ ĐỘ OFFLINE / MẪU</div>`;
-            } else {
-                let countBGH = bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length;
-                let countAll = bodyRows.length;
-                dashboardTarget.innerHTML = `
-                    <div class="stat-card">Tổng sự kiện: <span>${countAll}</span></div>
-                    ${countBGH > 0 ? `<div class="stat-card">Họp/Công tác BGH: <span>${countBGH}</span></div>` : ''}
-                    <div id="notification-control" class="stat-card" title="Nhấn để cho phép trình duyệt gửi thông báo khi có lịch mới">
-                        <span id="notification-status"></span>
-                    </div>
-                `;
-            }
+            // Xây dựng Dashboard & Nút Test Thông báo
+            const dashboardTarget = document.getElementById('ai-dashboard');
+            dashboardTarget.innerHTML = `
+                <div class="stat-card">Tổng sự kiện: <span>${bodyRows.length}</span></div>
+                <div class="stat-card">Họp BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
+                <div class="stat-card" style="border-left-color: #28a745;">
+                    Trạng thái: <span id="notify-status" style="color:#28a745; font-size: 1em;">Đang chạy</span>
+                    <button class="btn-test-notify" onclick="forceTestNotification()">🔔 Test Thông Báo</button>
+                </div>
+            `;
             dashboardTarget.style.display = "flex";
 
-            // 3. Render Table
-            const { bodyHtml, uniqueDays } = this.buildTableBody(bodyRows, headers);
-            const tableHtml = `
-                <table class="custom-schedule">
-                    <thead><tr>${headers.map(h => `<th>${this.escapeHtml(h)}</th>`).join('')}</tr></thead>
-                    <tbody>${bodyHtml}</tbody>
-                </table>`;
-            document.getElementById('main-table').innerHTML = tableHtml;
-
-            // 4. Filter Buttons
-            let filtersHtml = `<button class="filter-btn active" onclick="App.setDayFilter('all', this)">Tất cả các ngày</button>`;
-            uniqueDays.forEach(day => {
-                if(day.length < 25) { // Chỉ hiện nút nếu tên ngày không quá dài
-                    filtersHtml += `<button class="filter-btn" onclick="App.setDayFilter('${this.escapeHtml(day)}', this)">${this.escapeHtml(day)}</button>`;
-                }
+            // Xây dựng bảng
+            const spanMap = this.calculateRowSpans(bodyRows, headers);
+            let bodyHtml = ''; const uniqueDays = new Set();
+            const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
+            const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
+            
+            bodyRows.forEach((row, rIdx) => {
+                if(row[0]) uniqueDays.add(row[0]);
+                bodyHtml += `<tr>`;
+                headers.forEach((h, c) => {
+                    if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
+                    let content = row[c] || '';
+                    if(c === idxChuTri) content = content.replace(TAG_REGEX, m => `<span class="tag-common ${TAG_COLOR_MAP[m]}">${m}</span>`);
+                    else if (['BGH','TPT','SGD'].includes(content)) content = `<span class="tag-common tag-${content.toLowerCase()}">${content}</span>`;
+                    
+                    let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
+                    if(c===idxChuTri) cls += ' align-center';
+                    let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
+                    bodyHtml += `<td class="${cls}"${rowspan}>${content.replace(/\n/g, '<br>')}</td>`;
+                });
+                bodyHtml += `</tr>`;
             });
-            filtersTarget.innerHTML = filtersHtml;
-            filtersTarget.style.display = 'flex';
 
-            // 5. Show Final UI
+            document.getElementById('main-table').innerHTML = `<table class="custom-schedule"><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
+            
+            // Filters
+            let filtersHtml = `<button class="filter-btn active" onclick="App.setDayFilter('all', this)">Tất cả</button>`;
+            uniqueDays.forEach(day => { if(day.length<25) filtersHtml += `<button class="filter-btn" onclick="App.setDayFilter('${day}', this)">${day}</button>`; });
+            document.getElementById('day-filters').innerHTML = filtersHtml;
+            document.getElementById('day-filters').style.display = 'flex';
+
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-table').style.display = 'block';
             document.getElementById('search-area').style.display = 'flex';
-
-            // Gán sự kiện sau khi UI đã được render hoàn chỉnh
             this.setupEventListeners();
-            this.setupNotifications();
         } catch (e) { 
-            console.error(e);
-            this.showError("Lỗi hiển thị: " + e.message); 
+            console.error(e); 
+            // Xóa cache nếu lỗi để lần sau tải lại sạch sẽ
+            localStorage.removeItem(this.CACHE_KEY);
+            if(document.getElementById('loading-state')) document.getElementById('loading-state').innerHTML = `<div class="error-msg">⚠️ Lỗi dữ liệu CSV. Vui lòng kiểm tra file Google Sheet.</div>`;
         }
     },
 
-    escapeHtml(text) {
-        if (!text) return '';
-        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    calculateRowSpans(bodyRows, headers) {
+        if (!bodyRows.length) return [];
+        const colsToMerge = [0, 1, headers.findIndex(c => c.toLowerCase().includes('thời gian'))].filter(i => i !== -1);
+        const spanMap = bodyRows.map(() => Array(headers.length).fill(1));
+        let start = 0;
+        for (let i = 1; i < bodyRows.length; i++) {
+            const match = colsToMerge.every(c => (bodyRows[i][c]||'').trim() === (bodyRows[i-1][c]||'').trim() && (bodyRows[i][c]||''));
+            if (match) { colsToMerge.forEach(c => { spanMap[i][c] = 0; spanMap[start][c]++; }); } else { start = i; }
+        }
+        return spanMap;
     }
 };
 
 /**
- * AI SYSTEM: THEO DÕI CẬP NHẬT GITHUB PAGES (Phiên bản 60s)
+ * LOGIC THÔNG BÁO CẬP NHẬT (1 PHÚT)
  */
 function initGitHubUpdateTracker() {
     if (!("Notification" in window)) return;
-    
-    // Yêu cầu quyền nếu chưa có
-    if (Notification.permission !== "granted") {
-        Notification.requestPermission();
-    }
+    if (Notification.permission !== "granted") Notification.requestPermission();
 
     const currentUrl = window.location.href.split('?')[0]; 
-    const checkInterval = 60000; // <<< ĐÃ SỬA: 1 phút check 1 lần (60.000 ms)
+    const checkInterval = 60000; // 1 phút
     let storedLastModified = localStorage.getItem('gh_last_modified');
 
     setInterval(async () => {
         try {
-            const checkUrl = currentUrl + '?t=' + new Date().getTime();
-            const response = await fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' });
-
+            const response = await fetch(currentUrl + '?t=' + new Date().getTime(), { method: 'HEAD', cache: 'no-cache' });
             if (response.ok) {
                 const newLastModified = response.headers.get('last-modified');
                 if (!storedLastModified) {
@@ -546,12 +304,9 @@ function initGitHubUpdateTracker() {
                     localStorage.setItem('gh_last_modified', newLastModified);
                     return;
                 }
-
                 if (newLastModified && newLastModified !== storedLastModified) {
-                    console.log("GitHub Page Updated:", newLastModified);
                     storedLastModified = newLastModified;
                     localStorage.setItem('gh_last_modified', newLastModified);
-
                     if (Notification.permission === "granted") {
                         const n = new Notification("Cập Nhật Hệ Thống!", {
                             body: "Trang web đã có phiên bản mới. Bấm để tải lại.",
@@ -566,9 +321,25 @@ function initGitHubUpdateTracker() {
     }, checkInterval);
 }
 
-// KHỞI CHẠY TOÀN BỘ HỆ THỐNG
+// Hàm Test Thông Báo Thủ Công
+function forceTestNotification() {
+    if (!("Notification" in window)) { alert("Trình duyệt không hỗ trợ!"); return; }
+    if (Notification.permission === "granted") {
+        new Notification("🔔 Kiểm Tra Thành Công!", {
+            body: "Hệ thống thông báo hoạt động tốt. Hãy đợi 1 phút nếu có code mới.",
+            icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+        });
+    } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") forceTestNotification();
+        });
+    } else {
+        alert("Bạn đã chặn thông báo! Hãy mở khóa (hình ổ khóa trên thanh địa chỉ).");
+    }
+}
+
+// KHỞI CHẠY
 App.init();
-initGitHubUpdateTracker();
 </script>
 </body>
 </html>
