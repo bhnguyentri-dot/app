@@ -3,139 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v7.0 - AI Super Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>Lịch Công Tác Thông Minh v6.1 - Smart Caching</title>
     <style>
         /* --- CORE RESET & FONT --- */
-        :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --accent-color: #d97706;
-            --bg-color: #f8fafc;
-            --surface-color: #ffffff;
-            --text-color: #1e293b;
-            --border-radius: 12px;
-        }
+        body { margin: 0; padding: 0; background-color: #f4f6f9; }
+        #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-radius: 8px; }
+        
+        /* --- HEADER & DASHBOARD --- */
+        .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+        .schedule-header .sub-info { text-align: center; color: #555; margin-bottom: 15px; font-weight: 600; font-size: 16px; }
+        
+        /* Dashboard */
+        .dashboard-panel { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
+        .stat-card { background: linear-gradient(135deg, #f6f9fc 0%, #eef2f3 100%); padding: 10px 20px; border-radius: 8px; border-left: 5px solid #4472C4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; }
+        .stat-card span { color: #d32f2f; font-size: 1.2em; margin-left: 5px; }
+        .stat-card.alert-mode { border-left-color: #d32f2f; background: #fff0f0; color: #d32f2f; }
+        #notification-control { cursor: pointer; }
 
-        body { margin: 0; padding: 0; background-color: var(--bg-color); color: var(--text-color); font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-        
-        #schedule-container { 
-            margin: 30px auto; width: 95%; max-width: 1600px; 
-            background: var(--surface-color); padding: 30px; 
-            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); 
-            border-radius: var(--border-radius); 
-            border: 1px solid rgba(255,255,255,0.5);
-        }
-        
-        /* --- HEADER --- */
-        .schedule-header { text-align: center; margin-bottom: 30px; }
-        .schedule-header h2 { 
-            color: var(--secondary-color); margin: 0 0 8px 0; 
-            text-transform: uppercase; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; 
-        }
-        .schedule-header .sub-info { color: #64748b; font-weight: 500; font-size: 16px; }
-        
-        /* --- AI DASHBOARD --- */
-        .dashboard-panel { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; flex-wrap: wrap; display: none; }
-        .stat-card { 
-            background: white; padding: 15px 25px; border-radius: var(--border-radius); 
-            border: 1px solid #e2e8f0; border-left: 6px solid var(--primary-color);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); font-size: 14px; font-weight: 600; color: #475569;
-            transition: transform 0.2s;
-        }
-        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-        .stat-card span { color: var(--primary-color); font-size: 1.4em; margin-left: 8px; font-weight: 800; }
-        .stat-card.highlight { border-left-color: var(--accent-color); }
-        .stat-card.highlight span { color: var(--accent-color); }
-
-        /* --- FILTERS --- */
-        .filter-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; display: none; }
+        /* --- SMART FILTER TABS --- */
+        .filter-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
         .filter-btn {
-            padding: 10px 20px; border: 1px solid #cbd5e1; background: white; border-radius: 50px;
-            cursor: pointer; font-size: 14px; font-weight: 600; color: #64748b; transition: all 0.2s;
+            padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px;
+            cursor: pointer; font-size: 14px; font-weight: 600; color: #555; transition: all 0.2s;
         }
-        .filter-btn:hover { background: #f1f5f9; color: #334155; }
-        .filter-btn.active { 
-            background: var(--primary-color); color: white; border-color: var(--primary-color); 
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transform: scale(1.05);
-        }
+        .filter-btn:hover { background: #f0f0f0; }
+        .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; box-shadow: 0 4px 10px rgba(68, 114, 196, 0.3); }
+
+        /* --- LOADING --- */
+        #loading-state { text-align: center; padding: 40px; color: #007bff; display: block; }
+        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error-msg { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 5px; border: 1px solid #ffcdd2; margin-top: 10px; display: inline-block; font-weight: bold; }
 
         /* --- TOOLS --- */
-        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 15px; display: none; }
-        #searchInput { 
-            flex-grow: 1; padding: 12px 20px; border: 2px solid #e2e8f0; border-radius: var(--border-radius); 
-            font-size: 15px; transition: all 0.3s; 
-        }
-        #searchInput:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
-        .btn-print { 
-            background-color: #334155; color: white; border: none; padding: 0 30px; 
-            border-radius: var(--border-radius); cursor: pointer; font-weight: 700; 
-            transition: background 0.2s; display: flex; align-items: center; gap: 8px;
-        }
-        .btn-print:hover { background-color: #1e293b; }
+        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; display: none; }
+        #searchInput { flex-grow: 1; padding: 12px 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; transition: border-color 0.3s; }
+        #searchInput:focus { border-color: #4472C4; outline: none; }
+        .btn-print { background-color: #4472C4; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.2s; white-space: nowrap; }
+        .btn-print:hover { background-color: #365a9e; }
 
         /* --- TABLE --- */
-        .table-responsive { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: var(--border-radius); display: none; }
-        table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14px; background: white; }
+        .table-responsive { overflow: auto; max-height: 80vh; border: 1px solid #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-radius: 4px; position: relative; display: none; }
+        table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14px; background-color: white; }
+        table.custom-schedule thead th { background-color: #4472C4; color: white; padding: 14px 10px; text-align: center; border: 1px solid #fff; border-bottom: 2px solid #2c4a85; white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
+        table.custom-schedule td { border: 1px solid #b0b0b0; padding: 10px 12px; vertical-align: middle; color: #222; line-height: 1.5; }
         
-        table.custom-schedule thead th { 
-            background-color: var(--primary-color); color: white; padding: 16px 12px; 
-            text-align: center; border-bottom: 3px solid #1d4ed8; white-space: nowrap; 
-            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
-            position: sticky; top: 0; z-index: 10; 
-        }
-        
-        table.custom-schedule td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; padding: 14px 16px; vertical-align: middle; line-height: 1.6; color: #334155; }
-        table.custom-schedule tr:last-child td { border-bottom: none; }
-
-        /* Sticky Columns */
-        table.custom-schedule td.col-sticky-date { 
-            background-color: #f0f9ff !important; font-weight: 700; text-align: center; 
-            color: var(--secondary-color); position: sticky; left: 0; z-index: 5; 
-            border-right: 2px solid #cbd5e1; min-width: 120px;
-        }
-        
-        table.custom-schedule td.col-time { font-weight: 700; text-align: center; white-space: nowrap; color: #dc2626; background-color: #fef2f2; width: 80px; }
+        table.custom-schedule td.col-sticky-date { background-color: #A9D08E !important; font-weight: bold; text-align: center; color: #000; position: sticky; left: 0; z-index: 5; border-right: 2px solid #888; }
+        table.custom-schedule td.col-time { font-weight: bold; text-align: center; white-space: nowrap; color: #d32f2f; background-color: #fffaf0; }
         table.custom-schedule td.align-center { text-align: center; }
+        
+        tr.row-th td:not(.col-sticky-date) { background-color: #E2EFDA; }
+        tr.row-thcs td:not(.col-sticky-date) { background-color: #DDEBF7; }
+        table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
 
-        /* Row Colors */
-        tr.row-thcs td:not(.col-sticky-date) { background-color: #f0fdf4; } /* Xanh lá nhạt */
-        tr.row-th td:not(.col-sticky-date) { background-color: #f8fafc; } /* Trắng xám */
-        table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffbeb !important; cursor: default; transition: background 0.1s; }
+        /* No results row */
+        .no-results-row td { text-align: center; font-style: italic; color: #777; padding: 20px; background-color: #fafafa !important; }
 
         /* Tags */
-        .tag-common { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85em; display: inline-block; margin: 3px; border: 1px solid rgba(0,0,0,0.05); }
-        .tag-bgh { background-color: #fef3c7; color: #b45309; }
-        .tag-tpt { background-color: #ffedd5; color: #c2410c; }
-        .tag-sgd { background-color: #dbeafe; color: #1e40af; }
-        
-        /* Person Tags */
-        .tag-name-ht { background-color: #fee2e2; color: #b91c1c; }
-        .tag-name-hp { background-color: #dcfce7; color: #15803d; }
-        .tag-name-tt { background-color: #e0f2fe; color: #0369a1; }
-        .tag-name-gvcn { background-color: #f3e8ff; color: #7e22ce; }
-        .tag-name-gv { background-color: #f1f5f9; color: #475569; }
+        .tag-common { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.9em; display: inline-block; margin: 2px; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+        .tag-bgh { background-color: #FFC000; color: #000; }
+        .tag-tpt { background-color: #FFE699; color: #333; }
+        .tag-sgd { background-color: #9BC2E6; color: #003366; }
 
-        /* Loading */
-        #loading-state { text-align: center; padding: 60px; }
-        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .error-msg { color: #dc2626; background: #fef2f2; padding: 20px; border-radius: 8px; border: 1px solid #fecaca; font-weight: 600; display: inline-block;}
+        /* Tags cho tên người chủ trì */
+        .tag-name-ht { background-color: #ffcdd2; color: #c62828; }
+        .tag-name-hp { background-color: #c8e6c9; color: #2e7d32; }
+        .tag-name-tt { background-color: #bbdefb; color: #1565c0; }
+        .tag-name-gv { background-color: #f5f5f5; color: #424242; border: 1px solid #e0e0e0;}
 
-        /* Print */
+        /* --- UPDATE NOTIFICATION --- */
+        .update-notification {
+            background-color: #28a745; /* Green for success */
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-weight: bold;
+            border-radius: 8px;
+            position: fixed; /* Nổi trên nội dung */
+            top: 20px;
+            left: 50%;
+            transform: translate(-50%, -150%); /* Ẩn ở trên và căn giữa */
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: transform 0.5s ease-in-out;
+            cursor: pointer;
+        }
+        .update-notification.show {
+            transform: translate(-50%, 0); /* Trượt xuống để hiện ra */
+        }
+
         @media print {
-            body { background: white; -webkit-print-color-adjust: exact; }
-            #schedule-container { box-shadow: none; width: 100%; margin: 0; padding: 0; border: none; max-width: none; }
-            .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, #loading-state { display: none !important; }
-            .table-responsive { display: block !important; overflow: visible; border: none; }
-            table.custom-schedule th { background-color: #e2e8f0 !important; color: black !important; border: 1px solid #000; }
-            table.custom-schedule td { border: 1px solid #000; }
+            body { background: white; }
+            #schedule-container { box-shadow: none; width: 100%; margin: 0; padding: 0; max-width: none; }
+            .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print { display: none !important; }
+            .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; }
+            table.custom-schedule th { background-color: #ccc !important; color: black !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
 <body>
 
 <div id="schedule-container">
+    <div id="update-notification" class="update-notification"></div>
+
     <div id="top-info" class="schedule-header"></div>
     
     <div id="ai-dashboard" class="dashboard-panel"></div>
@@ -144,12 +114,12 @@
     
     <div id="loading-state">
         <div class="spinner"></div> 
-        <span id="loading-text" style="color: #64748b; font-weight: 600;">Đang kết nối AI và tải dữ liệu...</span>
+        <span id="loading-text">AI đang đồng bộ dữ liệu...</span>
     </div>
 
     <div id="search-area" class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm nhanh (Giáo viên, nội dung, phòng họp)..." onkeyup="filterTable()">
-        <button onclick="window.print()" class="btn-print">🖨️ In Lịch</button>
+        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm nội dung cụ thể trong lịch..." title="Nhập từ khóa để tìm kiếm">
+        <button onclick="window.print()" class="btn-print" title="In hoặc xuất ra PDF">🖨️ In Lịch</button>
     </div>
 
     <div id="main-table" class="table-responsive"></div>
@@ -157,337 +127,400 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER v7.0 (Fixed & Modernized)
+ * AI SUPER-SCHEDULER v6.1 (Smart Caching Edition)
+ * Fixed & Optimized by Gemini Code Assist
  */
 const CONFIG = {
     sheetID: '2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A',
-    sheetGid: '2028559314', // GID của Sheet LỊCH TUẦN
+    sheetGid: '2028559314',
     proxies: [
-        'https://api.allorigins.win/raw?url=',
         'https://api.codetabs.com/v1/proxy?quest=',
+        'https://api.allorigins.win/raw?url=',
         'https://corsproxy.io/?'
     ]
 };
 
-// Dữ liệu mẫu dùng khi mất kết nối
 const FALLBACK_DATA = `
-TUẦN 20 - NĂM HỌC 2024-2025
-Từ ngày 01/01 đến 07/01/2025
+LỊCH CÔNG TÁC TUẦN (CHẾ ĐỘ OFFLINE)
+Từ ngày 01/01 đến 07/01
 Thứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối
-Hai,01/01,07:00,Chào cờ đầu tuần,Sân trường,BGH,Toàn trường,,THCS
-Hai,01/01,08:00,Họp giao ban BGH,Phòng HT,HT,BGH,,TH
-Ba,02/01,14:00,Tập huấn chuyên môn,Hội trường A,P.HT,GVCN Khối 9,,THCS
-Tư,03/01,08:00,Dự giờ thăm lớp 5A,Lớp 5A,TT,GV Tổ 5,,TH
-Năm,04/01,08:00,Thi HSG Cấp Trường,Phòng 1-5,BGH,HS Đội tuyển,,THCS
-Năm,04/01,14:00,Họp tổ chuyên môn,Văn phòng,TT,GV,,TH
-Sáu,05/01,07:30,Lao động vệ sinh,Khu vực được phân công,TPT,HS,,THCS
+Hai,01/01,07:00,Chào cờ (Mẫu),Sân trường,BGH,Toàn trường,,THCS
+Hai,01/01,08:00,Họp BGH,Phòng HT,BGH,BGH,,TH
+Ba,02/01,14:00,Tập huấn,Hội trường,SGD,GV,,THCS
 `;
 
-let currentFilterDay = 'all';
-
-// --- UTILS ---
-function showError(msg) {
-    const loadingEl = document.getElementById('loading-state');
-    if (loadingEl) loadingEl.innerHTML = `<div class="error-msg">⚠️ ${msg}</div>`;
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-}
-
-function parseCSV(text) {
-    const rows = [];
-    let currentRow = [];
-    let currentVal = '';
-    let inQuote = false;
-    for (let i = 0; i < text.length; i++) {
-        const char = text[i], nextChar = text[i + 1];
-        if (char === '"') { inQuote ? (nextChar === '"' ? (currentVal += '"', i++) : inQuote = !inQuote) : inQuote = !inQuote; } 
-        else if (char === ',' && !inQuote) { currentRow.push(currentVal); currentVal = ''; } 
-        else if ((char === '\r' || char === '\n') && !inQuote) { 
-            if (char === '\r' && nextChar === '\n') i++; 
-            currentRow.push(currentVal); rows.push(currentRow); currentRow = []; currentVal = ''; 
-        } else { currentVal += char; }
-    }
-    if (currentRow.length > 0 || currentVal !== '') { currentRow.push(currentVal); rows.push(currentRow); }
-    return rows;
-}
-
-// --- LOGIC ---
-function loadScheduleData() {
-    const sourceUrl = `https://docs.google.com/spreadsheets/d/e/${CONFIG.sheetID}/pub?gid=${CONFIG.sheetGid}&single=true&output=csv`;
-    const url1 = CONFIG.proxies[0] + encodeURIComponent(sourceUrl);
-    
-    fetch(url1)
-        .then(res => { if (!res.ok) throw new Error(res.status); return res.text(); })
-        .then(csv => { renderProfessionalTable(csv); })
-        .catch(err => {
-            console.warn("Proxy 1 failed:", err);
-            const url2 = CONFIG.proxies[1] + encodeURIComponent(sourceUrl);
-            fetch(url2)
-                .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-                .then(csv => { renderProfessionalTable(csv); })
-                .catch(() => { renderProfessionalTable(FALLBACK_DATA, true); });
-        });
-}
-
-const ROLE_COLOR_MAP = {
-    "BGH": "tag-bgh", "SGD": "tag-sgd", "TPT": "tag-tpt", "CĐ": "tag-sgd",
+const NAME_COLOR_MAP = {
     "Hiệu trưởng": "tag-name-ht", "HT": "tag-name-ht",
-    "Hiệu phó": "tag-name-hp", "HP": "tag-name-hp", "P.HT": "tag-name-hp",
-    "Tổ trưởng": "tag-name-tt", "TT": "tag-name-tt",
-    "GVCN": "tag-name-gvcn", "Giáo viên": "tag-name-gv"
+    "Hiệu phó": "tag-name-hp", "HP": "tag-name-hp",
+    "Tổ trưởng": "tag-name-tt"
 };
 
-const DAY_MAP = {
-    "Hai": "Thứ Hai", "Ba": "Thứ Ba", "Tư": "Thứ Tư",
-    "Năm": "Thứ Năm", "Sáu": "Thứ Sáu", "Bảy": "Thứ Bảy", "CN": "Chủ Nhật"
+const TAG_COLOR_MAP = {
+    "BGH": "tag-bgh", "TPT": "tag-tpt", "SGD": "tag-sgd",
+    ...NAME_COLOR_MAP
 };
+const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
-// Tính toán Rowspan cho cột đầu tiên (Gộp Thứ & Ngày)
-function calculateRowSpans(bodyRows) {
-    if (bodyRows.length === 0) return [];
-    
-    const spans = new Array(bodyRows.length).fill(1);
-    let previousDay = bodyRows[0][0].trim(); // Lấy giá trị cột đầu tiên (Thứ)
-    let startIndex = 0;
+const App = {
+    currentFilterDay: 'all',
+    filterTimeout: null,
+    CACHE_KEY: 'smart_schedule_cache_v1',
 
-    for (let i = 1; i < bodyRows.length; i++) {
-        const currentDay = bodyRows[i][0].trim();
-        // Logic: Nếu Thứ giống nhau thì gộp
-        if (currentDay === previousDay && currentDay !== '') {
-            spans[startIndex]++;
-            spans[i] = 0; // Đánh dấu ô này bị ẩn
-        } else {
-            previousDay = currentDay;
-            startIndex = i;
-        }
-    }
-    return spans;
-}
+    init() {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Chiến thuật Smart Cache: Hiển thị cache trước, tải mới sau
+            this.loadFromCache();
+            this.loadScheduleData();
+        });
+    },
 
-function buildTableBody(bodyRows, headers) {
-    const spanMap = calculateRowSpans(bodyRows);
-    const uniqueDays = new Set();
-    
-    // Tìm index các cột quan trọng
-    // Lưu ý: headers gốc là [Thứ, Ngày, Time, Nội dung...]
-    // Chúng ta sẽ gộp Thứ & Ngày nên Time sẽ là cột index 2 trong dữ liệu gốc, nhưng là cột index 1 trong hiển thị (sau khi gộp)
-    
-    // Tìm vị trí tương đối
-    let idxTimeRaw = -1, idxChuTriRaw = -1, idxKhoiRaw = -1;
-    
-    headers.forEach((h, i) => {
-        const txt = h.toLowerCase();
-        if (txt.includes('thời gian')) idxTimeRaw = i;
-        else if (txt.includes('chủ trì')) idxChuTriRaw = i;
-        else if (txt.includes('khối')) idxKhoiRaw = i;
-    });
-    
-    // Nếu không tìm thấy, fallback về mặc định
-    if (idxTimeRaw === -1) idxTimeRaw = 2;
-    if (idxChuTriRaw === -1) idxChuTriRaw = 4; // Ví dụ
-    if (idxKhoiRaw === -1) idxKhoiRaw = headers.length - 1;
-
-    let bodyHtml = '';
-
-    bodyRows.forEach((row, rIdx) => {
-        let rawDay = (row[0] || '').trim();
-        if (rawDay !== '') uniqueDays.add(rawDay);
-
-        // Class cho dòng dựa trên Khối
-        let rowClass = '';
-        const khoiVal = (row[idxKhoiRaw] || '').toUpperCase();
-        if (khoiVal.includes('THCS')) rowClass = 'row-thcs';
-        else if (khoiVal.includes('TH')) rowClass = 'row-th';
-
-        // Bắt đầu dòng, thêm data-day để lọc
-        bodyHtml += `<tr class="${rowClass}" data-day="${escapeHtml(rawDay)}">`;
-
-        // --- Xử lý Cột Gộp (Thứ + Ngày) ---
-        // Chỉ render nếu span > 0. Nếu span = 0 nghĩa là ô bị gộp
-        if (spanMap[rIdx] > 0) {
-            const dayOfWeek = (row[0] || '').trim();
-            const dateVal = (row[1] || '').trim(); // Cột Ngày thường là cột thứ 2
-            const fullDayText = DAY_MAP[dayOfWeek] || dayOfWeek;
-            
-            // Nội dung ô gộp
-            const cellContent = `<div style="font-size:1.1em; margin-bottom:4px;">${fullDayText}</div><div style="font-weight:400; font-size:0.9em; color:#666;">${dateVal}</div>`;
-            
-            const rowspanAttr = spanMap[rIdx] > 1 ? ` rowspan="${spanMap[rIdx]}"` : '';
-            bodyHtml += `<td class="col-sticky-date"${rowspanAttr}>${cellContent}</td>`;
+    setupEventListeners() {
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput) {
+            searchInput.addEventListener('keyup', () => {
+                clearTimeout(this.filterTimeout);
+                this.filterTimeout = setTimeout(() => this.filterTable(), 300);
+            });
         }
 
-        // --- Xử lý các cột còn lại (Bắt đầu từ cột 2: Thời gian) ---
-        for (let c = 2; c < headers.length; c++) {
-            let cellData = (row[c] || '').trim();
-            let cellContent = escapeHtml(cellData).replace(/\n/g, '<br>');
-            let cellClass = '';
-            
-            // Xác định kiểu cột
-            if (c === idxTimeRaw) cellClass = 'col-time';
-            if (c === idxChuTriRaw) {
-                cellClass = 'align-center';
-                // Tô màu tag
-                for (const role in ROLE_COLOR_MAP) {
-                    const regex = new RegExp(`\\b${role}\\b`, 'gi'); // Case insensitive
-                    cellContent = cellContent.replace(regex, (match) => `<span class="tag-common ${ROLE_COLOR_MAP[role]}">${match}</span>`);
+        const notification = document.getElementById('update-notification');
+        if (notification) {
+            notification.addEventListener('click', () => {
+                notification.classList.remove('show');
+            });
+        }
+    },
+
+    setupNotifications() {
+        const control = document.getElementById('notification-control');
+        if (!control || !('Notification' in window)) {
+            if(control) control.style.display = 'none';
+            return;
+        }
+
+        const updateStatus = (permission) => {
+            const statusEl = document.getElementById('notification-status');
+            if (!statusEl) return;
+            if (permission === 'granted') {
+                statusEl.textContent = '✅ Đã bật thông báo';
+                control.style.borderLeftColor = '#28a745';
+            } else if (permission === 'denied') {
+                statusEl.textContent = '🚫 Đã chặn thông báo';
+                control.style.borderLeftColor = '#d32f2f';
+            } else {
+                statusEl.textContent = '🔔 Bật thông báo trình duyệt';
+                control.style.borderLeftColor = '#fbc02d';
+            }
+        };
+
+        updateStatus(Notification.permission);
+
+        control.addEventListener('click', () => Notification.requestPermission().then(updateStatus));
+    },
+
+    showError(msg) {
+        const loadingEl = document.getElementById('loading-state');
+        if (loadingEl) loadingEl.innerHTML = `<div class="error-msg">⚠️ ${msg}</div>`;
+    },
+
+    parseCSV(text) {
+        const rows = [];
+        let currentRow = [];
+        let currentVal = '';
+        let inQuote = false;
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i], nextChar = text[i + 1];
+            if (char === '"') { inQuote ? (nextChar === '"' ? (currentVal += '"', i++) : inQuote = !inQuote) : inQuote = !inQuote; } 
+            else if (char === ',' && !inQuote) { currentRow.push(currentVal); currentVal = ''; } 
+            else if ((char === '\r' || char === '\n') && !inQuote) { 
+                if (char === '\r' && nextChar === '\n') i++; 
+                currentRow.push(currentVal); rows.push(currentRow); currentRow = []; currentVal = ''; 
+            } else { currentVal += char; }
+        }
+        if (currentRow.length > 0 || currentVal !== '') { currentRow.push(currentVal); rows.push(currentRow); }
+        return rows;
+    },
+
+    filterTable() {
+        const input = document.getElementById("searchInput");
+        const textFilter = input.value.toUpperCase();
+        const table = document.querySelector("table.custom-schedule");
+        if (!table) return;
+
+        const rows = table.querySelector("tbody").getElementsByTagName("tr");
+        let visibleRowCount = 0;
+
+        for (const row of rows) {
+            if (row.classList.contains('no-results-row')) continue;
+            const rowDay = row.getAttribute('data-day');
+            const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
+            const textMatch = textFilter === "" || row.textContent.toUpperCase().includes(textFilter);
+
+            if (dayMatch && textMatch) {
+                row.style.display = "";
+                visibleRowCount++;
+            } else {
+                row.style.display = "none";
+            }
+        }
+
+        let noResultsRow = table.querySelector('.no-results-row');
+        if (visibleRowCount === 0) {
+            if (!noResultsRow) {
+                noResultsRow = table.querySelector("tbody").insertRow();
+                noResultsRow.className = 'no-results-row';
+                const colCount = table.querySelector('thead th') ? table.querySelector('thead th').length : 9;
+                noResultsRow.innerHTML = `<td colspan="${colCount}">Không tìm thấy nội dung phù hợp.</td>`;
+            }
+            noResultsRow.style.display = "";
+        } else if (noResultsRow) {
+            noResultsRow.style.display = "none";
+        }
+    },
+
+    setDayFilter(day, btnElement) {
+        this.currentFilterDay = day;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
+        const searchInput = document.getElementById('searchInput');
+        if(searchInput) searchInput.value = '';
+        this.filterTable();
+    },
+
+    loadFromCache() {
+        const cached = localStorage.getItem(this.CACHE_KEY);
+        if (cached) {
+            console.log("Loading from Smart Cache...");
+            this.renderProfessionalTable(cached, false);
+        }
+    },
+
+    loadScheduleData() {
+        const sourceUrl = `https://docs.google.com/spreadsheets/d/e/${CONFIG.sheetID}/pub?gid=${CONFIG.sheetGid}&single=true&output=csv`;
+        
+        // Thử proxy 1
+        fetch(CONFIG.proxies[0] + encodeURIComponent(sourceUrl))
+            .then(res => { if (!res.ok) throw new Error("Proxy 1 failed"); return res.text(); })
+            .then(csv => this.processNewData(csv))
+            .catch(err => {
+                console.warn("Chuyển sang Proxy 2...", err);
+                // Thử proxy 2
+                fetch(CONFIG.proxies[1] + encodeURIComponent(sourceUrl))
+                    .then(r => { if (!r.ok) throw new Error("Proxy 2 failed"); return r.text(); })
+                    .then(csv => this.processNewData(csv))
+                    .catch(() => { 
+                        // Nếu thất bại hết, chỉ hiện Fallback nếu chưa có cache
+                        if(!localStorage.getItem(this.CACHE_KEY)) {
+                            this.renderProfessionalTable(FALLBACK_DATA, true); 
+                        }
+                    });
+            });
+    },
+
+    processNewData(newCsv) {
+        const oldCsv = localStorage.getItem(this.CACHE_KEY);
+        
+        // Nếu có dữ liệu cũ và dữ liệu mới khác dữ liệu cũ -> có cập nhật
+        if (oldCsv && oldCsv !== newCsv) {
+            const notification = document.getElementById('update-notification');
+            if (notification && !notification.classList.contains('show')) {
+                notification.innerText = '✨ Lịch công tác vừa được cập nhật!';
+                notification.classList.add('show');
+                // Tự động ẩn sau 5 giây
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 5000);
+
+                // Gửi thông báo gốc của trình duyệt nếu được phép
+                if ('Notification' in window && Notification.permission === 'granted') {
+                    const iconUrl = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>';
+                    new Notification('Lịch Công Tác', { body: 'Vừa có cập nhật mới!', icon: iconUrl, tag: 'schedule-update' });
                 }
             }
-
-            bodyHtml += `<td class="${cellClass}">${cellContent}</td>`;
         }
-        bodyHtml += '</tr>';
-    });
 
-    return { bodyHtml, uniqueDays };
-}
+        localStorage.setItem(this.CACHE_KEY, newCsv); // Lưu dữ liệu mới vào cache
+        this.renderProfessionalTable(newCsv); // Hiển thị dữ liệu mới
+    },
 
-function analyzeScheduleAI(rows, headers) {
-    // AI đếm số lượng công việc
-    const countTotal = rows.length;
-    let countBGH = 0;
-    let countHop = 0;
-    let busiestDay = { name: '', count: 0 };
-    const dayCounts = {};
+    // --- LOGIC FUNCTIONS (Đã được sửa lỗi cú pháp) ---
+    calculateRowSpans(bodyRows, headers) {
+        if (!bodyRows || bodyRows.length === 0) return [];
 
-    rows.forEach(row => {
-        const content = row.join(' ').toUpperCase();
-        const day = row[0];
-        
-        if (content.includes('BGH') || content.includes('HIỆU TRƯỞNG') || content.includes('HIỆU PHÓ')) countBGH++;
-        if (content.includes('HỌP') || content.includes('TẬP HUẤN')) countHop++;
-        
-        // Đếm ngày bận rộn
-        if(day) {
-            dayCounts[day] = (dayCounts[day] || 0) + 1;
+        // Xác định các cột cần gộp nhóm
+        const idxDay = 0; // Thứ
+        const idxDate = 1; // Ngày
+        const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
+        const colsToMerge = [idxDay, idxDate, idxTime].filter(i => i !== -1);
+
+        // Khởi tạo map cho tất cả các cột
+        const spanMap = bodyRows.map(() => Array(headers.length).fill(1));
+        let currentSpanStart = 0;
+
+        for (let i = 1; i < bodyRows.length; i++) {
+            // Kiểm tra xem tất cả các cột cần gộp có giống nhau không
+            const shouldMerge = colsToMerge.every(colIdx => {
+                const prev = (bodyRows[i - 1][colIdx] || '').trim();
+                const cur = (bodyRows[i][colIdx] || '').trim();
+                return cur === prev && cur !== '';
+            });
+
+            if (shouldMerge) {
+                colsToMerge.forEach(colIdx => {
+                    spanMap[i][colIdx] = 0;
+                    spanMap[currentSpanStart][colIdx]++;
+                });
+            } else {
+                currentSpanStart = i;
+            }
         }
-    });
+        return spanMap;
+    },
 
-    // Tìm ngày bận nhất
-    for (const [day, count] of Object.entries(dayCounts)) {
-        if (count > busiestDay.count) {
-            busiestDay = { name: day, count: count };
+    applyColorTags(text, isChuTriColumn) {
+        if (!text) return '';
+        if (!isChuTriColumn) {
+            return text
+                .replace(/\bBGH\b/g, '<span class="tag-common tag-bgh">BGH</span>')
+                .replace(/\bTPT\b/g, '<span class="tag-common tag-tpt">TPT</span>')
+                .replace(/\bSGD\b/g, '<span class="tag-common tag-sgd">SGD</span>');
         }
-    }
+        return text.replace(TAG_REGEX, (match) => `<span class="tag-common ${TAG_COLOR_MAP[match]}">${match}</span>`);
+    },
 
-    const fullDayName = DAY_MAP[busiestDay.name] || busiestDay.name;
+    buildTableBody(bodyRows, headers) {
+        const spanMap = this.calculateRowSpans(bodyRows, headers);
+        const uniqueDays = new Set();
+        let currentDayValue = '';
 
-    return `
-        <div class="stat-card">Tổng đầu việc: <span>${countTotal}</span></div>
-        <div class="stat-card">Lịch BGH/Chỉ đạo: <span>${countBGH}</span></div>
-        <div class="stat-card">Số cuộc họp: <span>${countHop}</span></div>
-        <div class="stat-card highlight">Cao điểm: <span>${fullDayName} (${busiestDay.count})</span></div>
-    `;
-}
+        const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
+        const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
+        const idxKhoi = headers.length - 1;
 
-function renderProfessionalTable(csvText, isDemo = false) {
-    try {
-        const rawData = parseCSV(csvText);
-        // Tìm dòng chứa header (có chữ 'Thứ' hoặc 'Ngày')
-        let headerRowIndex = rawData.findIndex(row => row.some(c => c && c.toLowerCase().includes('thứ')));
-        if (headerRowIndex === -1) headerRowIndex = 2; // Mặc định dòng 3
+        let bodyHtml = '';
+        bodyRows.forEach((row, rIdx) => {
+            let rawDay = (row[0] || '').trim();
+            if (rawDay !== '') {
+                currentDayValue = rawDay;
+                uniqueDays.add(rawDay);
+            }
 
-        const headers = rawData[headerRowIndex];
-        // Lọc dữ liệu: Bỏ các dòng trống hoặc chỉ có header lặp lại
-        const bodyRows = rawData.slice(headerRowIndex + 1).filter(r => {
-            const hasData = !r.every(c => c.trim() === '');
-            const notHeader = !r[0].includes('Thứ');
-            return hasData && notHeader;
+            let rowClass = '';
+            const khoiVal = (row[idxKhoi] || '').toUpperCase();
+            if (khoiVal.includes('THCS')) rowClass = 'row-thcs';
+            else if (khoiVal.includes('TH')) rowClass = 'row-th';
+
+            bodyHtml += `<tr class="${rowClass}" data-day="${this.escapeHtml(currentDayValue)}">`;
+
+            for (let c = 0; c < headers.length; c++) {
+                let cellData = (row[c] || '').trim();
+                let cellContent = this.escapeHtml(cellData).replace(/\n/g, '<br>');
+                let cellClass = '';
+                let rowspanAttr = '';
+
+                // Logic gộp ô (rowspan) đã được nâng cấp
+                if (spanMap[rIdx] && spanMap[rIdx][c] === 0) continue;
+                if (spanMap[rIdx] && spanMap[rIdx][c] > 1) rowspanAttr = ` rowspan="${spanMap[rIdx][c]}"`;
+
+                if (c === 0 || c === 1) {
+                    cellClass = 'col-sticky-date';
+                }
+                if (c === idxTime) cellClass += ' col-time';
+                if (c === idxChuTri) cellClass += ' align-center';
+
+                bodyHtml += `<td class="${cellClass.trim()}"${rowspanAttr}>${this.applyColorTags(cellContent, c === idxChuTri)}</td>`;
+            }
+            bodyHtml += '</tr>';
         });
 
-        // --- Render UI ---
-        const headerTarget = document.getElementById('top-info');
-        const dashboardTarget = document.getElementById('ai-dashboard');
-        const filtersTarget = document.getElementById('day-filters');
+        return { bodyHtml, uniqueDays };
+    },
 
-        // 1. Top Info (Lấy các dòng trên header)
-        if (!isDemo) {
-            let topHtml = '';
-            for (let i = 0; i < headerRowIndex; i++) {
-                const info = rawData[i].filter(c => c.trim() !== '').join(' - ');
-                if (info) topHtml += (topHtml === '') ? `<h2>${escapeHtml(info)}</h2>` : `<div class="sub-info">${escapeHtml(info)}</div>`;
+    renderProfessionalTable(csvText, isDemo = false) {
+        try {
+            const rawData = this.parseCSV(csvText);
+            // Tìm dòng tiêu đề chứa chữ "Thứ"
+            const headerRowIndex = rawData.findIndex(row => row.some(c => c && c.toLowerCase().includes('thứ'))) || 0;
+            
+            if (headerRowIndex === -1 || rawData.length < headerRowIndex + 2) {
+                throw new Error("Dữ liệu CSV không đúng định dạng lịch.");
             }
-            headerTarget.innerHTML = topHtml;
-        }
 
-        // 2. AI Dashboard
-        dashboardTarget.innerHTML = isDemo 
-            ? `<div class="stat-card highlight">⚠️ ĐANG DÙNG DỮ LIỆU MẪU (OFFLINE)</div>` 
-            : analyzeScheduleAI(bodyRows, headers);
-        dashboardTarget.style.display = "flex";
+            const headers = rawData[headerRowIndex];
+            const bodyRows = rawData.slice(headerRowIndex + 1).filter(r => !r.every(c => c.trim() === ''));
 
-        // 3. Main Table
-        const { bodyHtml, uniqueDays } = buildTableBody(bodyRows, headers);
-        
-        // Header mới: Gộp Thứ+Ngày thành 1 cột "Thời Gian"
-        // headers.slice(2) nghĩa là bỏ 2 cột đầu (Thứ, Ngày) của file gốc để thay bằng cột gộp
-        const newHeaders = [`<th>THỨ / NGÀY</th>`, ...headers.slice(2).map(h => `<th>${escapeHtml(h)}</th>`)];
+            // UI Elements
+            const headerTarget = document.getElementById('top-info');
+            const dashboardTarget = document.getElementById('ai-dashboard');
+            const filtersTarget = document.getElementById('day-filters');
 
-        const tableHtml = `
-            <table class="custom-schedule">
-                <thead><tr>${newHeaders.join('')}</tr></thead>
-                <tbody>${bodyHtml}</tbody>
-            </table>`;
-        document.getElementById('main-table').innerHTML = tableHtml;
-
-        // 4. Filters
-        let filtersHtml = `<button class="filter-btn active" onclick="setDayFilter('all', this)">Tất cả</button>`;
-        uniqueDays.forEach(day => {
-            if(day.length < 10) { // Chỉ lấy tên thứ ngắn gọn
-                filtersHtml += `<button class="filter-btn" onclick="setDayFilter('${escapeHtml(day)}', this)">${escapeHtml(day)}</button>`;
+            // 1. Top Info Header
+            if (!isDemo && headerRowIndex > 0) {
+                let topHtml = '';
+                for (let i = 0; i < headerRowIndex; i++) {
+                    const info = rawData[i].filter(c => c.trim() !== '').join(' - ');
+                    if (info) topHtml += (topHtml === '') ? `<h2>${this.escapeHtml(info)}</h2>` : `<div class="sub-info">${this.escapeHtml(info)}</div>`;
+                }
+                headerTarget.innerHTML = topHtml;
             }
-        });
-        filtersTarget.innerHTML = filtersHtml;
-        filtersTarget.style.display = 'flex';
 
-        // Done
-        document.getElementById('loading-state').style.display = 'none';
-        document.getElementById('main-table').style.display = 'block';
-        document.getElementById('search-area').style.display = 'flex';
+            // 2. Dashboard Stat
+            if (isDemo) {
+                dashboardTarget.innerHTML = `<div class="stat-card alert-mode">⚠️ CHẾ ĐỘ OFFLINE / MẪU</div>`;
+            } else {
+                let countBGH = bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length;
+                let countAll = bodyRows.length;
+                dashboardTarget.innerHTML = `
+                    <div class="stat-card">Tổng sự kiện: <span>${countAll}</span></div>
+                    ${countBGH > 0 ? `<div class="stat-card">Họp/Công tác BGH: <span>${countBGH}</span></div>` : ''}
+                    <div id="notification-control" class="stat-card" title="Nhấn để cho phép trình duyệt gửi thông báo khi có lịch mới">
+                        <span id="notification-status"></span>
+                    </div>
+                `;
+            }
+            dashboardTarget.style.display = "flex";
 
-    } catch (e) { 
-        console.error(e);
-        showError("Lỗi xử lý dữ liệu: " + e.message); 
-    }
-}
+            // 3. Render Table
+            const { bodyHtml, uniqueDays } = this.buildTableBody(bodyRows, headers);
+            const tableHtml = `
+                <table class="custom-schedule">
+                    <thead><tr>${headers.map(h => `<th>${this.escapeHtml(h)}</th>`).join('')}</tr></thead>
+                    <tbody>${bodyHtml}</tbody>
+                </table>`;
+            document.getElementById('main-table').innerHTML = tableHtml;
 
-// --- FILTER & INTERACTION ---
-function filterTable() {
-    const input = document.getElementById("searchInput");
-    const textFilter = input.value.toUpperCase();
-    const table = document.querySelector("table.custom-schedule");
-    if (!table) return;
+            // 4. Filter Buttons
+            let filtersHtml = `<button class="filter-btn active" onclick="App.setDayFilter('all', this)">Tất cả các ngày</button>`;
+            uniqueDays.forEach(day => {
+                if(day.length < 25) { // Chỉ hiện nút nếu tên ngày không quá dài
+                    filtersHtml += `<button class="filter-btn" onclick="App.setDayFilter('${this.escapeHtml(day)}', this)">${this.escapeHtml(day)}</button>`;
+                }
+            });
+            filtersTarget.innerHTML = filtersHtml;
+            filtersTarget.style.display = 'flex';
 
-    const rows = table.querySelector("tbody").getElementsByTagName("tr");
-    
-    // Lưu ý: Khi filter text, cấu trúc rowspan có thể làm giao diện hơi lệch 1 chút ở cột Ngày
-    // Nhưng logic hiển thị vẫn đảm bảo đúng dữ liệu.
-    
-    for (const row of rows) {
-        const rowDay = row.getAttribute('data-day');
-        const dayMatch = (currentFilterDay === 'all') || (rowDay === currentFilterDay);
-        const textMatch = textFilter === "" || row.textContent.toUpperCase().includes(textFilter);
+            // 5. Show Final UI
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('main-table').style.display = 'block';
+            document.getElementById('search-area').style.display = 'flex';
 
-        if (dayMatch && textMatch) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
+            // Gán sự kiện sau khi UI đã được render hoàn chỉnh
+            this.setupEventListeners();
+            this.setupNotifications();
+        } catch (e) { 
+            console.error(e);
+            this.showError("Lỗi hiển thị: " + e.message); 
         }
+    },
+
+    escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
-}
+};
 
-function setDayFilter(day, btnElement) {
-    currentFilterDay = day;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btnElement.classList.add('active');
-    
-    document.getElementById('searchInput').value = '';
-    filterTable();
-}
-
-document.addEventListener('DOMContentLoaded', loadScheduleData);
+// Khởi chạy
+App.init();
 </script>
 </body>
 </html>
