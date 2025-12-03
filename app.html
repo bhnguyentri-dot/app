@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v7.0 - PWA APP</title>
+    <title>Lịch Công Tác BHS v7.1 - SYSTEM NOTIFICATION</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png">
     
     <style>
-        /* --- GIỮ NGUYÊN CSS NHƯ CŨ --- */
+        /* --- CSS GIỮ NGUYÊN --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
         #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-radius: 8px; }
         .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
@@ -87,10 +87,11 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER v7.0 - PWA EDITION
- * Tính năng: Hỗ trợ cài đặt như App, Chạy ngầm Service Worker.
+ * AI SUPER-SCHEDULER v7.1
+ * Tính năng chính: Kết nối Service Worker để gửi thông báo hệ thống (System Notification)
  */
 
+// Link Apps Script của bạn:
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
 
 const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ,Sân trường,BGH,Toàn trường,,THCS`;
@@ -106,19 +107,34 @@ const App = {
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
-            this.registerServiceWorker(); // Đăng ký nhân viên chạy ngầm
+            this.registerServiceWorker(); // 1. Đăng ký SW
             this.loadFromCache();
             this.loadScheduleData(false);
             this.initRealtimeCheck(); 
             this.setupInstallButton();
+            
+            // Xin quyền thông báo ngay lập tức
+            if ('Notification' in window && Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
         });
     },
 
+    // --- QUAN TRỌNG: KẾT NỐI VỚI FILE SW.JS ---
     registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker đã sẵn sàng:', reg.scope))
-                .catch(err => console.log('Lỗi Service Worker:', err));
+                .then(reg => {
+                    console.log('Service Worker đã kết nối:', reg.scope);
+                    // Cập nhật SW nếu có bản mới
+                    reg.update(); 
+                })
+                .catch(err => console.log('Lỗi kết nối SW:', err));
+            
+            // Lắng nghe controller thay đổi
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log("Service Worker controller changed");
+            });
         }
     },
 
@@ -204,15 +220,21 @@ const App = {
         this.renderProfessionalTable(newCsv);
     },
 
+    // --- LOGIC GỬI LỆNH CHO SW ---
     checkAndAutoUpdate(newCsv) {
         const oldHash = localStorage.getItem(this.HASH_KEY);
         if (oldHash && parseInt(oldHash) !== newCsv.length) {
+            console.log("CÓ UPDATE -> GỌI SW");
             this.processNewData(newCsv); 
+            
+            // 1. Rung nút trạng thái
             const statusCard = document.getElementById("status-card-inner");
             if(statusCard) {
                 statusCard.classList.add("shake-active");
                 setTimeout(() => statusCard.classList.remove("shake-active"), 1000);
             }
+            
+            // 2. Hiện Toast HTML
             const toast = document.getElementById("toast-notify");
             if (toast) {
                 toast.classList.remove("show");
@@ -220,9 +242,17 @@ const App = {
                 toast.classList.add("show");
                 setTimeout(() => { toast.classList.remove("show"); }, 5000);
             }
-            // Gửi thêm thông báo hệ thống nếu đang chạy nền
-            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-                 new Notification("📅 Lịch Mới!", { body: "Lịch công tác vừa được cập nhật.", icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" });
+
+            // 3. QUAN TRỌNG: Gửi tin nhắn cho Service Worker để hiện thông báo hệ thống
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SHOW_NOTIFICATION',
+                    title: '📅 Lịch Thay Đổi!',
+                    body: 'Nội dung lịch công tác vừa được cập nhật.'
+                });
+            } else {
+                // Fallback nếu SW lỗi
+                new Notification("📅 Lịch Thay Đổi!", { body: "Nội dung lịch công tác vừa được cập nhật." });
             }
         }
     },
@@ -255,7 +285,7 @@ const App = {
                 <div class="stat-card">Tổng sự kiện: <span>${bodyRows.length}</span></div>
                 <div class="stat-card">Họp BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
                 <div id="status-card-inner" class="stat-card" style="border-left-color: #28a745;">
-                    <span style="color:#28a745;">⚡ App Mode</span>
+                    <span style="color:#28a745;">⚡ Connected</span>
                     <button class="btn-test-notify" onclick="testToast()">🔔 Test</button>
                 </div>
             `;
@@ -312,15 +342,26 @@ const App = {
     }
 };
 
+// TEST FUNCTION ĐẦY ĐỦ
 function testToast() {
+    // 1. Test trong Web
     const toast = document.getElementById("toast-notify");
-    toast.classList.remove("show");
-    void toast.offsetWidth; 
     toast.classList.add("show");
     setTimeout(() => { toast.classList.remove("show"); }, 3000);
-    // Test cả thông báo hệ thống
+
+    // 2. Test gửi lệnh ra Service Worker
     if (Notification.permission === 'granted') {
-         new Notification("🔔 Test", { body: "Thông báo hệ thống hoạt động tốt.", icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" });
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            console.log("Đang gửi lệnh test cho SW...");
+            navigator.serviceWorker.controller.postMessage({
+                type: 'SHOW_NOTIFICATION',
+                title: '🔔 Test Hệ Thống',
+                body: 'Đây là thông báo từ Service Worker!'
+            });
+        } else {
+            console.log("SW chưa sẵn sàng, dùng fallback...");
+            new Notification("🔔 Test", { body: "Thông báo thường (SW chưa active)." });
+        }
     } else {
         Notification.requestPermission();
     }
