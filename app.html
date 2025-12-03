@@ -3,137 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - SYSTEM NOTIFICATION</title>
+    <title>Lịch Công Tác BHS - AI UPGRADE V8.0</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
     
     <style>
-        /* --- CSS GIỮ NGUYÊN --- */
-        body { margin: 0; padding: 0; background-color: #f4f6f9; }
-        #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-radius: 8px; }
+        /* --- CSS BASE --- */
+        body { margin: 0; padding: 0; background-color: #f4f6f9; scroll-behavior: smooth; }
+        #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 4px 25px rgba(0,0,0,0.08); border-radius: 12px; }
+        
+        /* HEADER & DASHBOARD */
         .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
-        .schedule-header .sub-info { text-align: center; color: #555; margin-bottom: 15px; font-weight: 600; font-size: 16px; }
-        .dashboard-panel { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
-        .stat-card { background: linear-gradient(135deg, #f6f9fc 0%, #eef2f3 100%); padding: 10px 20px; border-radius: 8px; border-left: 5px solid #4472C4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; }
-        .stat-card span { color: #d32f2f; font-size: 1.2em; margin-left: 5px; }
-        .btn-test-notify { background-color: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; margin-left: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s; }
+        .schedule-header .sub-info { text-align: center; color: #555; margin-bottom: 20px; font-weight: 600; font-size: 16px; }
+        
+        .dashboard-panel { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
+        .stat-card { background: white; padding: 12px 24px; border-radius: 10px; border-left: 5px solid #4472C4; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; transition: transform 0.2s; border: 1px solid #eee; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .stat-card span { color: #d32f2f; font-size: 1.3em; margin-left: 5px; font-weight: 800; }
+        
+        .btn-test-notify { background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 6px 18px; border-radius: 20px; cursor: pointer; font-size: 12px; margin-left: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); transition: all 0.2s; }
         .btn-test-notify:active { transform: scale(0.95); }
-        .btn-test-notify:hover { background-color: #218838; }
         
-        /* Hiệu ứng rung */
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
-        .shake-active { animation: shake 0.5s; border-left-color: #ff9800 !important; background: #fff3e0 !important; }
-
-        .table-responsive { overflow: auto; max-height: 80vh; border: 1px solid #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-radius: 4px; position: relative; display: none; }
-        table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14px; background-color: white; }
-        table.custom-schedule thead th { background-color: #4472C4; color: white; padding: 14px 10px; text-align: center; border: 1px solid #fff; border-bottom: 2px solid #2c4a85; white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
-        table.custom-schedule td { border: 1px solid #b0b0b0; padding: 10px 12px; vertical-align: middle; color: #222; line-height: 1.5; }
-        table.custom-schedule td.col-sticky-date { background-color: #A9D08E !important; font-weight: bold; text-align: center; color: #000; position: sticky; left: 0; z-index: 5; border-right: 2px solid #888; }
-        table.custom-schedule td.col-time { font-weight: bold; text-align: center; white-space: nowrap; color: #d32f2f; background-color: #fffaf0; }
+        /* TABLE STYLES */
+        .table-responsive { overflow: auto; max-height: 75vh; border: 1px solid #e0e0e0; box-shadow: inset 0 0 10px rgba(0,0,0,0.02); border-radius: 8px; position: relative; display: none; scrollbar-width: thin; }
+        table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14.5px; background-color: white; }
+        
+        /* Sticky Header Logic */
+        table.custom-schedule thead th { background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); color: white; padding: 16px 12px; text-align: center; border-right: 1px solid rgba(255,255,255,0.2); border-bottom: none; white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 20; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.6; }
+        
+        /* Sticky Date Column */
+        table.custom-schedule td.col-sticky-date { background-color: #f0f7ff !important; font-weight: 700; text-align: center; color: #1565c0; position: sticky; left: 0; z-index: 10; border-right: 2px solid #b0bec5; }
+        table.custom-schedule td.col-time { font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; font-family: 'Consolas', monospace; }
         table.custom-schedule td.align-center { text-align: center; }
-        tr.row-th td:not(.col-sticky-date) { background-color: #E2EFDA; }
-        tr.row-thcs td:not(.col-sticky-date) { background-color: #DDEBF7; }
-        table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
-        .filter-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
-        .filter-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; }
-        .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; }
-        #loading-state { text-align: center; padding: 40px; color: #007bff; display: block; }
-        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; display: none; }
-        #searchInput { flex-grow: 1; padding: 12px 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; }
-        .btn-print { background-color: #4472C4; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
-        /* Toast Notification */
-        #toast-notify {
-            visibility: hidden; min-width: 300px; background-color: #28a745; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 2147483647; right: 30px; top: 30px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.5s, top 0.5s; transform: translateY(-20px);
-        }
-        #toast-notify.show { visibility: visible; opacity: 1; top: 30px; transform: translateY(0); }
+        /* AI Highlight Current Day */
+        tr.is-today td { background-color: #e3f2fd !important; border-top: 2px solid #2196f3; border-bottom: 2px solid #2196f3; }
+        tr.is-today td.col-sticky-date { background-color: #bbdefb !important; color: #0d47a1; border-right: 2px solid #1976d2; }
 
-        /* Install Button */
-        #install-app-btn { display: none; background-color: #333; color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
-        #install-app-btn:hover { background-color: #000; }
+        table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
+        
+        /* UTILS */
+        .filter-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
+        .filter-btn { padding: 8px 20px; border: 1px solid #ddd; background: white; border-radius: 25px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; transition: all 0.2s; }
+        .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; box-shadow: 0 4px 10px rgba(68, 114, 196, 0.4); transform: translateY(-1px); }
+        
+        #loading-state { text-align: center; padding: 50px; color: #4472C4; display: block; }
+        .spinner { border: 4px solid rgba(68, 114, 196, 0.1); border-top: 4px solid #4472C4; border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 12px; display: none; }
+        #searchInput { flex-grow: 1; padding: 12px 20px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; transition: border-color 0.2s; outline: none; }
+        #searchInput:focus { border-color: #4472C4; }
+        .btn-print { background-color: #555; color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+        .btn-print:hover { background-color: #333; }
 
-        .tag-common { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.9em; display: inline-block; margin: 2px; }
+        /* TOAST & INSTALL */
+        #toast-notify { visibility: hidden; min-width: 320px; background: rgba(30, 30, 30, 0.95); color: #fff; text-align: left; border-radius: 12px; padding: 16px 20px; position: fixed; z-index: 99999; right: 20px; top: 20px; font-size: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); opacity: 0; transform: translateY(-20px); transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; gap: 12px; backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1); }
+        #toast-notify.show { visibility: visible; opacity: 1; transform: translateY(0); }
+        
+        #install-app-btn { display: none; background: #000; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+        /* TAGS */
+        .tag-common { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.85em; display: inline-block; margin: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .tag-bgh { background-color: #FFC000; color: #000; }
         .tag-tpt { background-color: #FFE699; color: #333; }
         .tag-sgd { background-color: #9BC2E6; color: #003366; }
         .tag-name-ht { background-color: #ffcdd2; color: #c62828; }
         .tag-name-hp { background-color: #c8e6c9; color: #2e7d32; }
         .tag-name-tt { background-color: #bbdefb; color: #1565c0; }
-        .tag-name-gv { background-color: #f5f5f5; color: #424242; border: 1px solid #e0e0e0;}
-        @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, .btn-test-notify, #toast-notify, #install-app-btn { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
+        
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } 100% { transform: translateX(0); } }
+        .shake-active { animation: shake 0.4s ease-in-out; border-left-color: #ff9800 !important; background: #fff3e0 !important; }
+
+        @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, .btn-test-notify, #toast-notify, #install-app-btn { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; box-shadow: none; } #schedule-container { box-shadow: none; width: 100%; max-width: none; margin: 0; padding: 0; } }
     </style>
 </head>
 <body>
 
 <div id="schedule-container">
     <div style="text-align: center;">
-        <button id="install-app-btn">📲 Cài đặt App Lịch</button>
+        <button id="install-app-btn">📲 Cài đặt App BHS</button>
     </div>
+    
     <div id="top-info" class="schedule-header"></div>
+    
     <div id="ai-dashboard" class="dashboard-panel"></div>
+    
     <div id="day-filters" class="filter-tabs"></div>
-    <div id="loading-state"><div class="spinner"></div><span id="loading-text">AI đang tải dữ liệu...</span></div>
+    
+    <div id="loading-state">
+        <div class="spinner"></div>
+        <span id="loading-text" style="font-weight: 600;">AI đang đồng bộ dữ liệu...</span>
+    </div>
+    
     <div id="search-area" class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm...">
+        <input type="text" id="searchInput" placeholder="🔍 Nhập từ khóa để tìm nhanh...">
         <button onclick="window.print()" class="btn-print">🖨️ In Lịch</button>
     </div>
+    
     <div id="main-table" class="table-responsive"></div>
 </div>
 
-<div id="toast-notify">🔔 Dữ liệu vừa được cập nhật tự động!</div>
+<div id="toast-notify">
+    <div style="font-size: 20px;">🔔</div>
+    <div>
+        <div style="font-weight: bold; margin-bottom: 2px;">Cập nhật mới</div>
+        <div style="font-size: 13px; opacity: 0.9;">Dữ liệu lịch vừa được làm mới tự động.</div>
+    </div>
+</div>
 
 <script>
 /**
- * AI SUPER-SCHEDULER v7.1
- * Tính năng chính: Kết nối Service Worker để gửi thông báo hệ thống (System Notification)
+ * AI SUPER-SCHEDULER V8.0
+ * Nâng cấp: Auto-Scroll to Today, Better UI, System Notification Sync
  */
 
-// Link Apps Script của bạn:
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
 
-const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ,Sân trường,BGH,Toàn trường,,THCS`;
+const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ đầu tuần,Sân trường,BGH,Toàn trường,,THCS`;
 const NAME_COLOR_MAP = { "Hiệu trưởng": "tag-name-ht", "HT": "tag-name-ht", "Hiệu phó": "tag-name-hp", "HP": "tag-name-hp", "Tổ trưởng": "tag-name-tt" };
 const TAG_COLOR_MAP = { "BGH": "tag-bgh", "TPT": "tag-tpt", "SGD": "tag-sgd", ...NAME_COLOR_MAP };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
 const App = {
     currentFilterDay: 'all',
-    CACHE_KEY: 'instant_schedule_data_v3',
-    HASH_KEY: 'instant_schedule_hash_v3',
+    CACHE_KEY: 'instant_schedule_data_v8',
+    HASH_KEY: 'instant_schedule_hash_v8',
     deferredPrompt: null,
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
-            this.registerServiceWorker(); // 1. Đăng ký SW
+            this.registerServiceWorker();
             this.loadFromCache();
             this.loadScheduleData(false);
             this.initRealtimeCheck(); 
             this.setupInstallButton();
             
-            // Xin quyền thông báo ngay lập tức
             if ('Notification' in window && Notification.permission !== 'granted') {
                 Notification.requestPermission();
             }
         });
     },
 
-    // --- QUAN TRỌNG: KẾT NỐI VỚI FILE SW.JS ---
     registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
                 .then(reg => {
-                    console.log('Service Worker đã kết nối:', reg.scope);
-                    // Cập nhật SW nếu có bản mới
+                    console.log('SW Registered:', reg.scope);
                     reg.update(); 
                 })
-                .catch(err => console.log('Lỗi kết nối SW:', err));
+                .catch(err => console.log('SW Error:', err));
             
-            // Lắng nghe controller thay đổi
             navigator.serviceWorker.addEventListener('controllerchange', () => {
-                console.log("Service Worker controller changed");
+                console.log("SW controller changed");
             });
         }
     },
@@ -178,19 +203,27 @@ const App = {
         const table = document.querySelector("table.custom-schedule");
         if (!table) return;
         const rows = table.querySelector("tbody").getElementsByTagName("tr");
+        let hasVisible = false;
         for (const row of rows) {
             if (row.classList.contains('no-results-row')) continue;
             const rowDay = row.getAttribute('data-day');
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
             const textMatch = textFilter === "" || row.textContent.toUpperCase().includes(textFilter);
-            row.style.display = (dayMatch && textMatch) ? "" : "none";
+            
+            if (dayMatch && textMatch) {
+                row.style.display = "";
+                hasVisible = true;
+            } else {
+                row.style.display = "none";
+            }
         }
     },
 
     setDayFilter(day, btnElement) {
         this.currentFilterDay = day;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btnElement.classList.add('active');
+        if(btnElement) btnElement.classList.add('active');
+        
         const searchInput = document.getElementById('searchInput');
         if(searchInput) searchInput.value = '';
         this.filterTable();
@@ -210,6 +243,7 @@ const App = {
                 if(isBackground) { this.checkAndAutoUpdate(csv); } else { this.processNewData(csv); }
             })
             .catch(err => {
+                console.warn("Fetch error:", err);
                 if(!isBackground && !localStorage.getItem(this.CACHE_KEY)) this.renderProfessionalTable(FALLBACK_DATA, true);
             });
     },
@@ -220,21 +254,20 @@ const App = {
         this.renderProfessionalTable(newCsv);
     },
 
-    // --- LOGIC GỬI LỆNH CHO SW ---
     checkAndAutoUpdate(newCsv) {
         const oldHash = localStorage.getItem(this.HASH_KEY);
         if (oldHash && parseInt(oldHash) !== newCsv.length) {
-            console.log("CÓ UPDATE -> GỌI SW");
+            console.log("Detect change -> Syncing...");
             this.processNewData(newCsv); 
             
-            // 1. Rung nút trạng thái
+            // Effect UI
             const statusCard = document.getElementById("status-card-inner");
             if(statusCard) {
                 statusCard.classList.add("shake-active");
                 setTimeout(() => statusCard.classList.remove("shake-active"), 1000);
             }
             
-            // 2. Hiện Toast HTML
+            // Toast
             const toast = document.getElementById("toast-notify");
             if (toast) {
                 toast.classList.remove("show");
@@ -243,22 +276,41 @@ const App = {
                 setTimeout(() => { toast.classList.remove("show"); }, 5000);
             }
 
-            // 3. QUAN TRỌNG: Gửi tin nhắn cho Service Worker để hiện thông báo hệ thống
+            // Call SW
             if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.controller.postMessage({
                     type: 'SHOW_NOTIFICATION',
-                    title: '📅 Lịch Thay Đổi!',
-                    body: 'Nội dung lịch công tác vừa được cập nhật.'
+                    title: '📅 Cập Nhật Lịch BHS',
+                    body: 'Nội dung lịch công tác vừa có sự thay đổi.'
                 });
-            } else {
-                // Fallback nếu SW lỗi
-                new Notification("📅 Lịch Thay Đổi!", { body: "Nội dung lịch công tác vừa được cập nhật." });
             }
         }
     },
 
     initRealtimeCheck() {
-        setInterval(() => { this.loadScheduleData(true); }, 10000); 
+        setInterval(() => { this.loadScheduleData(true); }, 15000); 
+    },
+
+    // --- AI UPGRADE: Logic cuộn tới ngày hôm nay ---
+    scrollToToday() {
+        const today = new Date();
+        const daysMap = ['Chủ Nhật', 'Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 'Bảy'];
+        const currentDayStr = daysMap[today.getDay()];
+        
+        // Tìm dòng có class is-today hoặc data-day trùng
+        const table = document.getElementById('main-table');
+        const todayRow = table.querySelector(`tr.is-today`) || table.querySelector(`tr[data-day="${currentDayStr}"]`);
+        
+        if (todayRow) {
+            setTimeout(() => {
+                todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Hiệu ứng flash nhẹ để báo hiệu
+                todayRow.style.transition = "background-color 1s";
+                const originalBg = todayRow.style.backgroundColor;
+                todayRow.style.backgroundColor = "#fff9c4"; // Highlight vàng nhạt
+                setTimeout(() => { todayRow.style.backgroundColor = originalBg; }, 1500);
+            }, 800); // Delay một chút để render xong
+        }
     },
 
     renderProfessionalTable(csvText, isDemo = false) {
@@ -283,10 +335,9 @@ const App = {
             const dashboardTarget = document.getElementById('ai-dashboard');
             dashboardTarget.innerHTML = `
                 <div class="stat-card">Tổng sự kiện: <span>${bodyRows.length}</span></div>
-                <div class="stat-card">Họp BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
-                <div id="status-card-inner" class="stat-card" style="border-left-color: #28a745;">
-                    <span style="color:#28a745;">⚡ Connected</span>
-                    <button class="btn-test-notify" onclick="testToast()">🔔 Test</button>
+                <div class="stat-card">Lịch BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
+                <div id="status-card-inner" class="stat-card" style="border-left-color: #28a745; cursor:pointer;" onclick="testToast()">
+                    <span style="color:#28a745; margin:0;">⚡ Live Sync</span>
                 </div>
             `;
             dashboardTarget.style.display = "flex";
@@ -296,9 +347,25 @@ const App = {
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
             
+            // Logic xác định ngày hôm nay để highlight
+            const todayDate = new Date();
+            const daysMap = ['Chủ Nhật', 'Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 'Bảy'];
+            const currentDow = daysMap[todayDate.getDay()];
+            const currentDDMM = ('0' + todayDate.getDate()).slice(-2) + '/' + ('0' + (todayDate.getMonth()+1)).slice(-2);
+
             bodyRows.forEach((row, rIdx) => {
-                if(row[0]) uniqueDays.add(row[0]);
-                bodyHtml += `<tr>`;
+                const dayText = row[0] || ''; // Cột Thứ
+                const dateText = row[1] || ''; // Cột Ngày
+                if(dayText) uniqueDays.add(dayText);
+                
+                // Check if this row is today
+                let isToday = false;
+                if (dayText.includes(currentDow) && dateText.includes(currentDDMM.split('/')[0])) {
+                    isToday = true;
+                }
+                const rowClass = isToday ? 'is-today' : '';
+
+                bodyHtml += `<tr data-day="${dayText}" class="${rowClass}">`;
                 headers.forEach((h, c) => {
                     if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
@@ -323,7 +390,12 @@ const App = {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-table').style.display = 'block';
             document.getElementById('search-area').style.display = 'flex';
+            
             this.setupEventListeners();
+            
+            // Trigger AI Feature: Auto Scroll
+            this.scrollToToday();
+
         } catch (e) { 
             console.error(e); 
         }
@@ -342,28 +414,19 @@ const App = {
     }
 };
 
-// TEST FUNCTION ĐẦY ĐỦ
 function testToast() {
-    // 1. Test trong Web
     const toast = document.getElementById("toast-notify");
     toast.classList.add("show");
     setTimeout(() => { toast.classList.remove("show"); }, 3000);
 
-    // 2. Test gửi lệnh ra Service Worker
-    if (Notification.permission === 'granted') {
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            console.log("Đang gửi lệnh test cho SW...");
-            navigator.serviceWorker.controller.postMessage({
-                type: 'SHOW_NOTIFICATION',
-                title: '🔔 Test Hệ Thống',
-                body: 'Đây là thông báo từ Service Worker!'
-            });
-        } else {
-            console.log("SW chưa sẵn sàng, dùng fallback...");
-            new Notification("🔔 Test", { body: "Thông báo thường (SW chưa active)." });
-        }
+    if (Notification.permission === 'granted' && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+            type: 'SHOW_NOTIFICATION',
+            title: '🔔 Test Hệ Thống',
+            body: 'Hệ thống thông báo hoạt động tốt!'
+        });
     } else {
-        Notification.requestPermission();
+        new Notification("🔔 Test", { body: "Thông báo cục bộ (SW chưa sẵn sàng)." });
     }
 }
 
@@ -371,4 +434,3 @@ App.init();
 </script>
 </body>
 </html>
-
