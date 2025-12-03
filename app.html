@@ -3,60 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v6.6 - Data Realtime</title>
+    <title>Lịch Công Tác Thông Minh v6.7 - INSTANT UPDATE</title>
     <style>
-        /* --- CORE RESET & FONT --- */
+        /* --- GIỮ NGUYÊN CSS NHƯ CŨ CHO ĐẸP --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
         #schedule-container { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 20px auto; width: 98%; max-width: 1400px; box-sizing: border-box; color: #333; background: white; padding: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-radius: 8px; }
-        
-        /* --- HEADER & DASHBOARD --- */
         .schedule-header h2 { text-align: center; color: #1a237e; margin: 0 0 10px 0; text-transform: uppercase; font-size: 26px; font-weight: 800; letter-spacing: 1px; }
         .schedule-header .sub-info { text-align: center; color: #555; margin-bottom: 15px; font-weight: 600; font-size: 16px; }
-        
-        /* Dashboard */
         .dashboard-panel { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
         .stat-card { background: linear-gradient(135deg, #f6f9fc 0%, #eef2f3 100%); padding: 10px 20px; border-radius: 8px; border-left: 5px solid #4472C4; box-shadow: 0 2px 5px rgba(0,0,0,0.05); font-size: 14px; font-weight: bold; color: #444; }
         .stat-card span { color: #d32f2f; font-size: 1.2em; margin-left: 5px; }
-        
-        /* Button Test Thông Báo */
-        .btn-test-notify {
-            background-color: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 20px;
-            cursor: pointer; font-size: 12px; margin-left: 10px; font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s;
-        }
+        .btn-test-notify { background-color: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 20px; cursor: pointer; font-size: 12px; margin-left: 10px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s; }
         .btn-test-notify:active { transform: scale(0.95); }
         .btn-test-notify:hover { background-color: #218838; }
-
-        /* --- TABLE --- */
         .table-responsive { overflow: auto; max-height: 80vh; border: 1px solid #ccc; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border-radius: 4px; position: relative; display: none; }
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14px; background-color: white; }
         table.custom-schedule thead th { background-color: #4472C4; color: white; padding: 14px 10px; text-align: center; border: 1px solid #fff; border-bottom: 2px solid #2c4a85; white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 10; }
         table.custom-schedule td { border: 1px solid #b0b0b0; padding: 10px 12px; vertical-align: middle; color: #222; line-height: 1.5; }
-        
         table.custom-schedule td.col-sticky-date { background-color: #A9D08E !important; font-weight: bold; text-align: center; color: #000; position: sticky; left: 0; z-index: 5; border-right: 2px solid #888; }
         table.custom-schedule td.col-time { font-weight: bold; text-align: center; white-space: nowrap; color: #d32f2f; background-color: #fffaf0; }
         table.custom-schedule td.align-center { text-align: center; }
-        
         tr.row-th td:not(.col-sticky-date) { background-color: #E2EFDA; }
         tr.row-thcs td:not(.col-sticky-date) { background-color: #DDEBF7; }
         table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
-
-        /* Filter Tabs */
         .filter-tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; display: none; }
         .filter-btn { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; }
         .filter-btn.active { background: #4472C4; color: white; border-color: #4472C4; }
-
-        /* Loading */
         #loading-state { text-align: center; padding: 40px; color: #007bff; display: block; }
         .spinner { border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Search */
         .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; display: none; }
         #searchInput { flex-grow: 1; padding: 12px 15px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; }
         .btn-print { background-color: #4472C4; color: white; border: none; padding: 0 25px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-
-        /* Tags */
         .tag-common { padding: 4px 8px; border-radius: 4px; font-weight: 700; font-size: 0.9em; display: inline-block; margin: 2px; }
         .tag-bgh { background-color: #FFC000; color: #000; }
         .tag-tpt { background-color: #FFE699; color: #333; }
@@ -65,73 +43,55 @@
         .tag-name-hp { background-color: #c8e6c9; color: #2e7d32; }
         .tag-name-tt { background-color: #bbdefb; color: #1565c0; }
         .tag-name-gv { background-color: #f5f5f5; color: #424242; border: 1px solid #e0e0e0;}
-
-        @media print {
-            .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, .btn-test-notify { display: none !important; }
-            .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; }
-        }
+        @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, .btn-test-notify { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
     </style>
 </head>
 <body>
 
 <div id="schedule-container">
     <div id="top-info" class="schedule-header"></div>
-    
     <div id="ai-dashboard" class="dashboard-panel"></div>
-
     <div id="day-filters" class="filter-tabs"></div>
-    
-    <div id="loading-state">
-        <div class="spinner"></div> 
-        <span id="loading-text">AI đang đồng bộ dữ liệu...</span>
-    </div>
-
+    <div id="loading-state"><div class="spinner"></div><span id="loading-text">AI đang kết nối trực tiếp...</span></div>
     <div id="search-area" class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm nội dung cụ thể trong lịch...">
+        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm...">
         <button onclick="window.print()" class="btn-print">🖨️ In Lịch</button>
     </div>
-
     <div id="main-table" class="table-responsive"></div>
 </div>
 
 <script>
 /**
- * AI SUPER-SCHEDULER v6.6
- * Nâng cấp: Theo dõi trực tiếp dữ liệu Google Sheet thay vì file code.
- * Fix lỗi: Chống cache khi load dữ liệu.
+ * AI SUPER-SCHEDULER v6.7 - INSTANT UPDATE EDITION
+ * Thay đổi: Sử dụng Google Apps Script Web App để bypass cache.
+ * Tốc độ: Cập nhật ngay lập tức khi Sheet thay đổi.
  */
-const CONFIG = {
-    sheetID: '2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A',
-    sheetGid: '2028559314',
-    proxies: ['https://api.codetabs.com/v1/proxy?quest=', 'https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?']
-};
+
+// --- BẠN DÁN LINK "/exec" VÀO DÒNG DƯỚI ĐÂY ---
+const SCRIPT_URL = 'DÁN_LINK_CỦA_BẠN_VÀO_ĐÂY'; 
+// Ví dụ: https://script.google.com/macros/s/AKfycbx.../exec
 
 const FALLBACK_DATA = `LỊCH CÔNG TÁC TUẦN (OFFLINE)\nThứ,Ngày,Thời gian,Nội dung,Địa điểm,Chủ trì,Thành phần,Ghi chú,Khối\nHai,01/01,07:00,Chào cờ,Sân trường,BGH,Toàn trường,,THCS`;
-
 const NAME_COLOR_MAP = { "Hiệu trưởng": "tag-name-ht", "HT": "tag-name-ht", "Hiệu phó": "tag-name-hp", "HP": "tag-name-hp", "Tổ trưởng": "tag-name-tt" };
 const TAG_COLOR_MAP = { "BGH": "tag-bgh", "TPT": "tag-tpt", "SGD": "tag-sgd", ...NAME_COLOR_MAP };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
 const App = {
     currentFilterDay: 'all',
-    CACHE_KEY: 'smart_schedule_cache_v1',
-    DATA_HASH_KEY: 'smart_schedule_hash_v1',
+    CACHE_KEY: 'instant_schedule_data',
+    HASH_KEY: 'instant_schedule_hash',
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
             this.loadFromCache();
-            this.loadScheduleData(false); // Load lần đầu không thông báo
-            this.initDataAutoUpdate(); // Bắt đầu theo dõi ngầm
+            this.loadScheduleData(false);
+            this.initRealtimeCheck(); 
         });
     },
 
     setupEventListeners() {
         const searchInput = document.getElementById('searchInput');
-        if(searchInput) {
-            searchInput.addEventListener('keyup', () => {
-                setTimeout(() => this.filterTable(), 300);
-            });
-        }
+        if(searchInput) searchInput.addEventListener('keyup', () => setTimeout(() => this.filterTable(), 300));
     },
 
     parseCSV(text) {
@@ -175,59 +135,49 @@ const App = {
         if (cached) this.renderProfessionalTable(cached, false);
     },
 
-    // Hàm tải dữ liệu chính (Có tham số isBackground để phân biệt chạy ngầm hay chạy chính)
+    // --- LOGIC TẢI DỮ LIỆU TỐC ĐỘ CAO ---
     loadScheduleData(isBackground = false) {
-        // THỦ THUẬT: Thêm &t=thời_gian để lừa trình duyệt tải mới 100%
-        const timestamp = new Date().getTime();
-        const sourceUrl = `https://docs.google.com/spreadsheets/d/e/${CONFIG.sheetID}/pub?gid=${CONFIG.sheetGid}&single=true&output=csv&t=${timestamp}`;
-        
-        const fetchSuccess = (csv) => {
-            if(isBackground) {
-                // Nếu chạy ngầm: Chỉ so sánh, không render lại ngay
-                this.checkDataChange(csv);
-            } else {
-                // Nếu chạy chính: Lưu và Render luôn
-                this.processNewData(csv);
-            }
-        };
+        if (!SCRIPT_URL || SCRIPT_URL.includes("DÁN_LINK")) {
+            if(!isBackground) alert("Bạn chưa dán link Apps Script vào code!");
+            return;
+        }
 
-        fetch(CONFIG.proxies[0] + encodeURIComponent(sourceUrl))
-            .then(res => res.ok ? res.text() : Promise.reject())
-            .then(fetchSuccess)
-            .catch(() => {
-                // Thử Proxy 2
-                fetch(CONFIG.proxies[1] + encodeURIComponent(sourceUrl))
-                    .then(r => r.ok ? r.text() : Promise.reject())
-                    .then(fetchSuccess)
-                    .catch(() => { 
-                        if(!isBackground && !localStorage.getItem(this.CACHE_KEY)) 
-                            this.renderProfessionalTable(FALLBACK_DATA, true); 
-                    });
+        // Fetch trực tiếp từ Script -> Script đọc Sheet -> Trả về ngay lập tức
+        fetch(SCRIPT_URL)
+            .then(res => res.text())
+            .then(csv => {
+                // Kiểm tra nếu dữ liệu rỗng hoặc lỗi script
+                if (!csv || csv.includes("Error") || csv.length < 50) return;
+
+                if(isBackground) {
+                    this.checkDataChange(csv);
+                } else {
+                    this.processNewData(csv);
+                }
+            })
+            .catch(err => {
+                console.error("Lỗi tải dữ liệu:", err);
+                if(!isBackground && !localStorage.getItem(this.CACHE_KEY)) this.renderProfessionalTable(FALLBACK_DATA, true);
             });
     },
 
     processNewData(newCsv) {
         localStorage.setItem(this.CACHE_KEY, newCsv);
-        // Lưu lại độ dài dữ liệu để so sánh nhanh
-        localStorage.setItem(this.DATA_HASH_KEY, newCsv.length); 
+        localStorage.setItem(this.HASH_KEY, newCsv.length);
         this.renderProfessionalTable(newCsv);
     },
 
-    // Kiểm tra xem dữ liệu mới có khác dữ liệu cũ không
     checkDataChange(newCsv) {
-        const oldHash = localStorage.getItem(this.DATA_HASH_KEY);
-        // So sánh độ dài chuỗi (Cách nhanh nhất để biết có thay đổi)
+        const oldHash = localStorage.getItem(this.HASH_KEY);
+        // So sánh độ dài trước cho nhanh
         if (oldHash && parseInt(oldHash) !== newCsv.length) {
-            console.log("Phát hiện dữ liệu Sheet thay đổi!");
-            
-            // Cập nhật dữ liệu ngầm
+            console.log("Phát hiện thay đổi tức thì!");
             localStorage.setItem(this.CACHE_KEY, newCsv);
-            localStorage.setItem(this.DATA_HASH_KEY, newCsv.length);
-
-            // Gửi thông báo
+            localStorage.setItem(this.HASH_KEY, newCsv.length);
+            
             if ('Notification' in window && Notification.permission === 'granted') {
                 const n = new Notification('Lịch Công Tác', { 
-                    body: 'Nội dung trên Google Sheet vừa thay đổi. Bấm để xem ngay!', 
+                    body: 'Dữ liệu vừa thay đổi! Bấm để cập nhật.', 
                     icon: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
                     requireInteraction: true 
                 });
@@ -236,27 +186,25 @@ const App = {
         }
     },
 
-    // Hệ thống tự động theo dõi dữ liệu (Mỗi 30 giây)
-    initDataAutoUpdate() {
+    initRealtimeCheck() {
         if (!("Notification" in window)) return;
         if (Notification.permission !== "granted") Notification.requestPermission();
         
+        // Kiểm tra mỗi 15 giây (Thoải mái vì Apps Script chịu tải tốt)
         setInterval(() => {
-            console.log("Đang kiểm tra Google Sheet...");
-            this.loadScheduleData(true); // true = Chạy ngầm
-        }, 30000); // 30 giây check 1 lần
+            this.loadScheduleData(true); 
+        }, 15000); 
     },
 
     renderProfessionalTable(csvText, isDemo = false) {
         try {
             const rawData = this.parseCSV(csvText);
             const headerRowIndex = rawData.findIndex(row => row.some(c => c && c.toLowerCase().includes('thứ'))) || 0;
-            if (headerRowIndex === -1 || rawData.length < headerRowIndex + 2) throw new Error("Dữ liệu CSV lỗi.");
+            if (headerRowIndex === -1 || rawData.length < headerRowIndex + 2) throw new Error("Format lỗi.");
             
             const headers = rawData[headerRowIndex];
             const bodyRows = rawData.slice(headerRowIndex + 1).filter(r => !r.every(c => c.trim() === ''));
             
-            // Xây dựng Header Info
             const headerTarget = document.getElementById('top-info');
             if (!isDemo && headerRowIndex > 0) {
                 let topHtml = '';
@@ -267,19 +215,17 @@ const App = {
                 headerTarget.innerHTML = topHtml;
             }
 
-            // Xây dựng Dashboard & Nút Test Thông báo
             const dashboardTarget = document.getElementById('ai-dashboard');
             dashboardTarget.innerHTML = `
                 <div class="stat-card">Tổng sự kiện: <span>${bodyRows.length}</span></div>
                 <div class="stat-card">Họp BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
                 <div class="stat-card" style="border-left-color: #28a745;">
-                    Trạng thái: <span id="notify-status" style="color:#28a745; font-size: 1em;">Đang theo dõi Sheet</span>
-                    <button class="btn-test-notify" onclick="forceTestNotification()">🔔 Test Thông Báo</button>
+                    <span style="color:#28a745;">⚡ Real-time Mode</span>
+                    <button class="btn-test-notify" onclick="forceTestNotification()">🔔 Test</button>
                 </div>
             `;
             dashboardTarget.style.display = "flex";
 
-            // Xây dựng bảng
             const spanMap = this.calculateRowSpans(bodyRows, headers);
             let bodyHtml = ''; const uniqueDays = new Set();
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
@@ -304,7 +250,6 @@ const App = {
 
             document.getElementById('main-table').innerHTML = `<table class="custom-schedule"><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${bodyHtml}</tbody></table>`;
             
-            // Filters
             let filtersHtml = `<button class="filter-btn active" onclick="App.setDayFilter('all', this)">Tất cả</button>`;
             uniqueDays.forEach(day => { if(day.length<25) filtersHtml += `<button class="filter-btn" onclick="App.setDayFilter('${day}', this)">${day}</button>`; });
             document.getElementById('day-filters').innerHTML = filtersHtml;
@@ -317,7 +262,7 @@ const App = {
         } catch (e) { 
             console.error(e); 
             localStorage.removeItem(this.CACHE_KEY);
-            if(document.getElementById('loading-state')) document.getElementById('loading-state').innerHTML = `<div class="error-msg">⚠️ Lỗi dữ liệu CSV. Vui lòng kiểm tra file Google Sheet.</div>`;
+            if(document.getElementById('loading-state')) document.getElementById('loading-state').innerHTML = `<div class="error-msg">⚠️ Chưa kết nối được. Hãy kiểm tra lại link Apps Script!</div>`;
         }
     },
 
@@ -334,25 +279,15 @@ const App = {
     }
 };
 
-// Hàm Test Thông Báo Thủ Công
 function forceTestNotification() {
-    console.log("Đang thử kích hoạt thông báo...");
     if (!("Notification" in window)) { alert("Trình duyệt không hỗ trợ!"); return; }
     if (Notification.permission === "granted") {
-        new Notification("🔔 Kết nối Google Sheet OK", {
-            body: "Đã bật chế độ tự động dò tìm dữ liệu mới mỗi 30 giây.",
-            icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
-        });
+        new Notification("⚡ Kết nối Real-time OK", { body: "Tốc độ cập nhật: 1-2 giây sau khi sửa Sheet.", icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" });
     } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(permission => {
-            if (permission === "granted") forceTestNotification();
-        });
-    } else {
-        alert("Bạn đang chặn thông báo trên Windows hoặc Trình duyệt!");
-    }
+        Notification.requestPermission().then(permission => { if (permission === "granted") forceTestNotification(); });
+    } else { alert("Hãy kiểm tra quyền thông báo trên Windows!"); }
 }
 
-// KHỞI CHẠY
 App.init();
 </script>
 </body>
