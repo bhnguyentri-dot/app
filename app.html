@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v6.2 - Auto Update</title>
+    <title>Lịch Công Tác Thông Minh v6.3 - Auto Update 1m</title>
     <style>
         /* --- CORE RESET & FONT --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
@@ -127,8 +127,8 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER v6.2 (Integrate Auto-Update)
- * Fix lỗi: Gộp tất cả script vào một khối duy nhất để tránh lỗi hiển thị text.
+ * AI SUPER-SCHEDULER v6.3
+ * Tính năng: Lịch thông minh & Tự động cập nhật sau 1 phút
  */
 const CONFIG = {
     sheetID: '2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A',
@@ -520,8 +520,7 @@ const App = {
 };
 
 /**
- * AI SYSTEM: THEO DÕI CẬP NHẬT GITHUB PAGES (Chạy song song)
- * Tự động reload trang khi file app.html trên server thay đổi.
+ * AI SYSTEM: THEO DÕI CẬP NHẬT GITHUB PAGES (Phiên bản 60s)
  */
 function initGitHubUpdateTracker() {
     if (!("Notification" in window)) return;
@@ -532,7 +531,7 @@ function initGitHubUpdateTracker() {
     }
 
     const currentUrl = window.location.href.split('?')[0]; 
-    const checkInterval = 30000; // 30s check 1 lần
+    const checkInterval = 60000; // <<< ĐÃ SỬA: 1 phút check 1 lần (60.000 ms)
     let storedLastModified = localStorage.getItem('gh_last_modified');
 
     setInterval(async () => {
