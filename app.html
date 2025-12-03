@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - LAYOUT V8.6</title>
+    <title>Lịch Công Tác BHS - STYLE V8.7</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -29,12 +29,20 @@
         table.custom-schedule thead th { background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); color: white; padding: 16px 12px; text-align: center; border-right: 1px solid rgba(255,255,255,0.2); white-space: nowrap; font-weight: bold; text-transform: uppercase; position: sticky; top: 0; z-index: 20; }
         table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.6; }
         
-        /* Sticky Date Column */
+        /* Sticky Date Column (Cột Ngày) */
         table.custom-schedule td.col-sticky-date { background-color: #f0f7ff; font-weight: 700; text-align: center; color: #1565c0; position: sticky; left: 0; z-index: 10; border-right: 2px solid #b0bec5; }
+        
+        /* Cột Thời gian */
         table.custom-schedule td.col-time { font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; }
         
-        /* --- [NEW] CỘT THỨ RỘNG HƠN --- */
-        .col-w-thu { min-width: 90px !important; width: 90px; } 
+        /* --- [NEW] CỘT THỨ (Màu xanh giống cột Ngày) --- */
+        .col-w-thu { 
+            min-width: 90px !important; 
+            width: 90px; 
+            color: #1565c0 !important; /* Màu xanh dương đậm giống cột Ngày */
+            font-weight: 700 !important; /* In đậm */
+            text-align: center;
+        } 
 
         /* --- FULL GREEN BLOCK FOR TODAY --- */
         tr.is-today td { 
@@ -42,10 +50,15 @@
             color: #000 !important;
             border-bottom: 1px solid #8fd19e !important; 
         }
+        /* Khi là ngày hôm nay, cột Sticky Date vẫn giữ màu xanh đậm hơn của nó */
         tr.is-today td.col-sticky-date {
             background-color: #8fd19e !important; 
             color: #064420 !important;
             border-right: 2px solid #0f5132 !important;
+        }
+        /* Khi là ngày hôm nay, cột Thứ cũng đổi sang màu xanh đậm của Today style */
+        tr.is-today td.col-w-thu {
+             color: #064420 !important;
         }
 
         table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
@@ -104,8 +117,8 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V8.6
- * Nâng cấp: Widen "Thứ" Column (Tăng độ rộng cột Thứ)
+ * AI SUPER-SCHEDULER V8.7
+ * Nâng cấp: Đồng bộ màu chữ cột "Thứ" giống cột "Ngày".
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -277,14 +290,12 @@ const App = {
             let bodyHtml = ''; const uniqueDays = new Set();
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
-            // AI Detect: Tìm cột Thứ để mở rộng
             const idxThu = headers.findIndex(c => c.toLowerCase().includes('thứ'));
             const idxNgay = 1;
 
             let lastSeenDate = '';
             let lastSeenDay = '';
 
-            // Render HEADERS với style riêng cho cột Thứ
             const headerHtml = headers.map((h, i) => {
                 const extraClass = (i === idxThu) ? 'col-w-thu' : '';
                 return `<th class="${extraClass}">${h}</th>`;
@@ -318,7 +329,7 @@ const App = {
                     }
                     
                     let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
-                    if (c === idxThu) cls += ' col-w-thu'; // Thêm class mở rộng cho cột Thứ
+                    if (c === idxThu) cls += ' col-w-thu'; 
                     if (c === idxChuTri) cls += ' align-center';
                     
                     let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
