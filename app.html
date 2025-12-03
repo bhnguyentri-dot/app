@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - AI UPGRADE V8.0</title>
+    <title>Lịch Công Tác BHS - GREEN UPDATE V8.1</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -39,9 +39,17 @@
         table.custom-schedule td.col-time { font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fff8f8; font-family: 'Consolas', monospace; }
         table.custom-schedule td.align-center { text-align: center; }
         
-        /* AI Highlight Current Day */
-        tr.is-today td { background-color: #e3f2fd !important; border-top: 2px solid #2196f3; border-bottom: 2px solid #2196f3; }
-        tr.is-today td.col-sticky-date { background-color: #bbdefb !important; color: #0d47a1; border-right: 2px solid #1976d2; }
+        /* --- AI Highlight Current Day (GREEN VERSION) --- */
+        tr.is-today td { 
+            background-color: #d1e7dd !important; /* Xanh lá nhạt */
+            border-top: 2px solid #198754;       /* Viền xanh đậm */
+            border-bottom: 2px solid #198754; 
+        }
+        tr.is-today td.col-sticky-date { 
+            background-color: #a3cfbb !important; /* Cột ngày đậm hơn chút */
+            color: #0f5132;                       /* Chữ xanh đậm */
+            border-right: 2px solid #146c43; 
+        }
 
         table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
         
@@ -117,8 +125,8 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V8.0
- * Nâng cấp: Auto-Scroll to Today, Better UI, System Notification Sync
+ * AI SUPER-SCHEDULER V8.1
+ * Nâng cấp: Green Highlight for Current Day
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -306,10 +314,9 @@ const App = {
                 todayRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 // Hiệu ứng flash nhẹ để báo hiệu
                 todayRow.style.transition = "background-color 1s";
-                const originalBg = todayRow.style.backgroundColor;
-                todayRow.style.backgroundColor = "#fff9c4"; // Highlight vàng nhạt
-                setTimeout(() => { todayRow.style.backgroundColor = originalBg; }, 1500);
-            }, 800); // Delay một chút để render xong
+                const originalBg = window.getComputedStyle(todayRow).backgroundColor; 
+                // Không đổi màu flash vàng nữa vì đã có màu xanh lá nổi bật
+            }, 800); 
         }
     },
 
