@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v6.4 - Final Fix</title>
+    <title>Lịch Công Tác Thông Minh v6.5 - Fix Code Lộ Thiên</title>
     <style>
         /* --- CORE RESET & FONT --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
@@ -22,7 +22,9 @@
         .btn-test-notify {
             background-color: #28a745; color: white; border: none; padding: 5px 15px; border-radius: 20px;
             cursor: pointer; font-size: 12px; margin-left: 10px; font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s;
         }
+        .btn-test-notify:active { transform: scale(0.95); }
         .btn-test-notify:hover { background-color: #218838; }
 
         /* --- TABLE --- */
@@ -94,8 +96,8 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER v6.4
- * Sửa lỗi: Gộp code vào script, thêm nút Test Notification
+ * AI SUPER-SCHEDULER v6.5
+ * Sửa lỗi triệt để: Đảm bảo script nằm trong thẻ script
  */
 const CONFIG = {
     sheetID: '2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A',
@@ -264,7 +266,6 @@ const App = {
             this.setupEventListeners();
         } catch (e) { 
             console.error(e); 
-            // Xóa cache nếu lỗi để lần sau tải lại sạch sẽ
             localStorage.removeItem(this.CACHE_KEY);
             if(document.getElementById('loading-state')) document.getElementById('loading-state').innerHTML = `<div class="error-msg">⚠️ Lỗi dữ liệu CSV. Vui lòng kiểm tra file Google Sheet.</div>`;
         }
@@ -323,10 +324,13 @@ function initGitHubUpdateTracker() {
 
 // Hàm Test Thông Báo Thủ Công
 function forceTestNotification() {
+    console.log("Đang thử kích hoạt thông báo..."); // Check console để thấy dòng này
+    
     if (!("Notification" in window)) { alert("Trình duyệt không hỗ trợ!"); return; }
+    
     if (Notification.permission === "granted") {
         new Notification("🔔 Kiểm Tra Thành Công!", {
-            body: "Hệ thống thông báo hoạt động tốt. Hãy đợi 1 phút nếu có code mới.",
+            body: "Hệ thống thông báo hoạt động tốt.",
             icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
         });
     } else if (Notification.permission !== "denied") {
