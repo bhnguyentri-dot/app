@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V9.7 ULTIMATE</title>
+    <title>Lịch Công Tác BHS - V9.8 NO SEARCH</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -49,10 +49,10 @@
             left: 0; 
             z-index: 20; 
             border-right: 2px solid #b0bec5; 
-            padding: 0; /* Full box */
+            padding: 0; 
             width: 140px;
             min-width: 140px;
-            vertical-align: middle; /* Căn giữa dọc cho ô */
+            vertical-align: middle; 
         }
 
         /* --- NỘI DUNG TRONG Ô GỘP --- */
@@ -61,8 +61,8 @@
             top: 55px;
             display: flex;
             flex-direction: column;
-            align-items: center; /* Căn giữa ngang */
-            justify-content: center; /* Căn giữa dọc */
+            align-items: center; 
+            justify-content: center; 
             height: 100%;
             padding: 20px 5px;
             box-sizing: border-box;
@@ -132,14 +132,14 @@
         #loading-state { text-align: center; padding: 50px; color: #4472C4; display: block; }
         .spinner { border: 4px solid rgba(68, 114, 196, 0.1); border-top: 4px solid #4472C4; border-radius: 50%; width: 50px; height: 50px; animation: spin 0.8s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .search-wrapper { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 12px; display: none; }
-        #searchInput { flex-grow: 1; padding: 12px 20px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
-        .btn-print { background-color: #555; color: white; border: none; padding: 0 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        /* Đã xóa .search-wrapper */
+        
         #install-app-btn { display: none; background: #000; color: white; border: none; padding: 10px 24px; border-radius: 30px; cursor: pointer; font-weight: bold; margin-bottom: 15px; }
         .tag-bgh { background-color: #FFC000; color: #000; padding: 4px 10px; border-radius: 6px; font-weight: 800; display: inline-block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         #toast-notify { visibility: hidden; min-width: 300px; background: #198754; color: #fff; text-align: center; border-radius: 50px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 99999; font-size: 15px; opacity: 0; transition: opacity 0.5s; font-weight: bold; }
         #toast-notify.show { visibility: visible; opacity: 1; }
-        @media print { .search-wrapper, #ai-dashboard, .filter-tabs, .btn-print, #toast-notify, #install-app-btn { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
+        @media print { .filter-tabs, #ai-dashboard, #toast-notify, #install-app-btn { display: none !important; } .table-responsive { overflow: visible; max-height: none; border: none; display: block !important; } }
     </style>
 </head>
 <body>
@@ -153,20 +153,15 @@
     <div id="day-filters" class="filter-tabs"></div>
     <div id="loading-state"><div class="spinner"></div><span id="loading-text" style="font-weight: 600;">Đang tải dữ liệu...</span></div>
     
-    <div id="search-area" class="search-wrapper">
-        <input type="text" id="searchInput" placeholder="🔍 Tìm kiếm (ví dụ: Thứ 5, BGH, 04/12)...">
-        <button onclick="window.print()" class="btn-print">In Lịch</button>
-    </div>
-    
     <div id="main-table" class="table-responsive"></div>
 </div>
 <div id="toast-notify">🔔 Dữ liệu đã được cập nhật!</div>
 
 <script>
 /**
- * AI SUPER-SCHEDULER V9.7
+ * AI SUPER-SCHEDULER V9.8
+ * - REMOVE: Search Bar removed.
  * - FEATURE: ULTIMATE MERGE (Single Left Column).
- * - LOGIC: Detects & Removes original "Day" and "Date" columns to avoid duplication.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -210,11 +205,6 @@ const App = {
         });
     },
 
-    setupEventListeners() {
-        const searchInput = document.getElementById('searchInput');
-        if(searchInput) searchInput.addEventListener('keyup', () => setTimeout(() => this.filterTable(), 300));
-    },
-
     parseCSV(text) {
         const rows = []; let currentRow = []; let currentVal = ''; let inQuote = false;
         for (let i = 0; i < text.length; i++) {
@@ -228,19 +218,15 @@ const App = {
     },
 
     filterTable() {
-        const input = document.getElementById("searchInput");
-        const textFilter = input.value.toUpperCase();
+        // [V9.8] Không còn tìm kiếm text, chỉ lọc theo Ngày (Tabs)
         const table = document.querySelector("table.custom-schedule");
         if (!table) return;
         const rows = table.querySelector("tbody").getElementsByTagName("tr");
         for (const row of rows) {
             if (row.classList.contains('no-results-row')) continue;
             const rowDay = row.getAttribute('data-day');
-            const rowHiddenDate = row.getAttribute('data-date') || '';
-            const rowVisibleText = row.textContent.toUpperCase();
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
-            const searchMatch = textFilter === "" || rowVisibleText.includes(textFilter) || rowDay.toUpperCase().includes(textFilter) || rowHiddenDate.toUpperCase().includes(textFilter);
-            row.style.display = (dayMatch && searchMatch) ? "" : "none";
+            row.style.display = (dayMatch) ? "" : "none";
         }
     },
 
@@ -248,8 +234,6 @@ const App = {
         this.currentFilterDay = day;
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         if(btnElement) btnElement.classList.add('active');
-        const searchInput = document.getElementById('searchInput');
-        if(searchInput) searchInput.value = '';
         this.filterTable();
     },
 
@@ -333,7 +317,6 @@ const App = {
             for (let i = 1; i < bodyRows.length; i++) {
                 const prev = bodyRows[i-1];
                 const curr = bodyRows[i];
-                // So sánh cả Ngày và Thứ
                 const isSame = (prev[idxNgay]||'').trim() === (curr[idxNgay]||'').trim() && 
                                (prev[idxThu]||'').trim() === (curr[idxThu]||'').trim();
                 
@@ -348,10 +331,9 @@ const App = {
             let bodyHtml = ''; const uniqueDays = new Set();
             let lastSeenDate = ''; let lastSeenDay = '';
 
-            // --- RENDER HEADER: BỎ CỘT THỨ, NGÀY VÀ CỘT RÁC (0) ---
+            // --- RENDER HEADER ---
             let headerHtml = `<th class="col-smart-date">NGÀY / THỨ</th>`;
             headers.forEach((h, i) => {
-                // Điều kiện loại bỏ: Cột 0 HOẶC Cột Thứ HOẶC Cột Ngày
                 if (i !== 0 && i !== idxThu && i !== idxNgay) { 
                     headerHtml += `<th>${h}</th>`;
                 }
@@ -373,7 +355,6 @@ const App = {
 
                 bodyHtml += `<tr data-day="${lastSeenDay}" data-date="${lastSeenDate}" class="${rowClass}">`;
                 
-                // --- CỘT SMART MERGE ---
                 if (finalSpans[rIdx] > 0) {
                     let shortDate = lastSeenDate.split('/').slice(0,2).join('/');
                     bodyHtml += `<td class="col-smart-date" rowspan="${finalSpans[rIdx]}">
@@ -384,9 +365,7 @@ const App = {
                     </td>`;
                 }
 
-                // --- CÁC CỘT CÒN LẠI ---
                 headers.forEach((h, c) => {
-                    // Chặn hiển thị lại các cột đã gộp
                     if (c === 0 || c === idxThu || c === idxNgay) return;
 
                     if (otherSpanMap[rIdx] && otherSpanMap[rIdx][c] === 0) return;
@@ -416,8 +395,8 @@ const App = {
 
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-table').style.display = 'block';
-            document.getElementById('search-area').style.display = 'flex';
-            this.setupEventListeners();
+            
+            this.setupEventListeners(); // [V9.8] Không còn listen input search
             
             setTimeout(() => {
                 const todayRow = document.querySelector('tr.is-today');
