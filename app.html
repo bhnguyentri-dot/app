@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS</title>
+    <title>Lịch Công Tác BHS - Full Tuần</title>
     <style>
         :root {
             --primary-blue: #2c5282; /* Màu xanh đậm tiêu đề bảng */
@@ -43,6 +43,7 @@
             background-color: var(--primary-blue); color: white; padding: 12px;
             font-size: 12px; text-transform: uppercase; font-weight: 700; text-align: left;
             position: sticky; top: 0;
+            white-space: nowrap;
         }
 
         td {
@@ -53,14 +54,14 @@
         /* Column Specifics */
         .col-date { font-weight: 700; color: var(--primary-blue); text-align: center; background-color: #ebf8ff; width: 100px; }
         .col-time { color: var(--text-red); font-weight: 700; width: 90px; }
-        .col-content { font-weight: 600; }
+        .col-content { font-weight: 600; min-width: 150px; }
         
         /* Badges */
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; display: inline-block; }
         .badge-warning { background-color: var(--badge-yellow); color: #744210; }
-
-        /* Helper Logic CSS */
-        .hidden { display: none; }
+        
+        /* Highlight Row Logic */
+        tr:hover td { background-color: #faf5ff; }
     </style>
 </head>
 <body>
@@ -69,8 +70,8 @@
         <h1 class="main-title">LỊCH CÔNG TÁC BHS TUẦN 18, NĂM 2025</h1>
         
         <div class="stats-bar">
-            <div class="stat-item">Sự kiện: <span>29</span></div>
-            <div class="stat-item">Lịch BGH: <span>9</span></div>
+            <div class="stat-item">Sự kiện: <span id="totalEvents">0</span></div>
+            <div class="stat-item">Lịch BGH: <span id="totalBGH">0</span></div>
             <div class="stat-item">Hôm nay: <span style="color: green;">03/12</span></div>
         </div>
 
@@ -99,12 +100,11 @@
     </div>
 
     <script>
-        // --- 1. DỮ LIỆU MẪU (Mô phỏng Database) ---
-        // Cấu trúc dữ liệu thông minh: Nhóm theo ngày để dễ render rowspan
+        // --- 1. DỮ LIỆU MẪU ĐẦY ĐỦ CẢ TUẦN ---
+        // BẠN SỬA NỘI DUNG TẠI ĐÂY
         const rawScheduleData = [
             {
-                date: "01/12",
-                day: "Thứ 2",
+                date: "01/12", day: "Thứ 2",
                 events: [
                     { time: "7:30 SA", content: "Chào cờ", detail: "Chào cờ đầu tuần toàn trường", host: "TPT", attendees: "Toàn trường", location: "Sân trường", note: "", dept: "TH" },
                     { time: "7:30 SA", content: "Chào cờ", detail: "Chào cờ đầu tuần", host: "TPT", attendees: "Toàn trường", location: "Sân trường", note: "", dept: "THCS" },
@@ -113,20 +113,50 @@
                 ]
             },
             {
-                date: "02/12",
-                day: "Thứ 3",
+                date: "02/12", day: "Thứ 3",
                 events: [
                     { time: "7:30 SA", content: "Múa sân trường", detail: "Múa sân trường TH", host: "TPT", attendees: "Cấp Tiểu học", location: "Sân trường", note: "", dept: "TH" },
                     { time: "7:45 SA", content: "Dự giờ thăm lớp", detail: "Dự giờ thăm lớp đột xuất", host: "BGH", attendees: "BGH, TT", location: "Đột xuất", note: "", dept: "TH", isHighlight: true },
-                    { time: "8:00 SA", content: "Tập huấn", detail: "Tập huấn môn Ngữ văn", host: "SGD", attendees: "Cô Hưng", location: "Trường TH-THCS-THPT Song Ngữ Lạc Hồng", note: "", dept: "THCS" },
-                    { time: "", content: "Phụ đạo HS theo KH", detail: "Phụ đạo HS theo kế hoạch", host: "TT", attendees: "GV được phân công", location: "Lớp học", note: "", dept: "TH" }
+                    { time: "8:00 SA", content: "Tập huấn", detail: "Tập huấn môn Ngữ văn", host: "SGD", attendees: "Cô Hưng", location: "Trường Song Ngữ Lạc Hồng", note: "", dept: "THCS" },
+                    { time: "", content: "Phụ đạo HS", detail: "Phụ đạo HS theo kế hoạch", host: "TT", attendees: "GV được phân công", location: "Lớp học", note: "", dept: "TH" }
+                ]
+            },
+            {
+                date: "03/12", day: "Thứ 4",
+                events: [
+                    { time: "7:30 SA", content: "Sinh hoạt chuyên môn", detail: "Họp tổ chuyên môn khối TH", host: "TTCM", attendees: "GV Tiểu học", location: "Phòng họp 1", note: "", dept: "TH" },
+                    { time: "14:00 CH", content: "Hội ý BGH", detail: "Họp giao ban tuần", host: "BGH", attendees: "BGH, Trưởng bộ phận", location: "Phòng Hiệu trưởng", note: "", dept: "VP", isHighlight: true }
+                ]
+            },
+            {
+                date: "04/12", day: "Thứ 5",
+                events: [
+                    { time: "8:00 SA", content: "Thao giảng", detail: "Thao giảng cấp trường môn Toán", host: "BGH", attendees: "GV Toán", location: "Lớp 9A1", note: "", dept: "THCS", isHighlight: true },
+                    { time: "15:00 CH", content: "CLB Tiếng Anh", detail: "Sinh hoạt CLB Speaking", host: "Tổ TA", attendees: "HS Đăng ký", location: "Hội trường", note: "", dept: "TH-THCS" }
+                ]
+            },
+            {
+                date: "05/12", day: "Thứ 6",
+                events: [
+                    { time: "7:30 SA", content: "Kiểm tra vệ sinh", detail: "Kiểm tra nề nếp vệ sinh lớp học", host: "TPT", attendees: "Sao đỏ", location: "Các lớp học", note: "", dept: "VP" }
+                ]
+            },
+            {
+                date: "06/12", day: "Thứ 7",
+                events: [
+                    { time: "8:00 SA", content: "Họp PHHS", detail: "Họp đại diện PHHS các lớp", host: "BGH", attendees: "Đại diện PHHS", location: "Hội trường A", note: "", dept: "VP", isHighlight: true }
+                ]
+            },
+            {
+                date: "07/12", day: "Chủ Nhật",
+                events: [
+                    { time: "", content: "Nghỉ", detail: "Nghỉ cuối tuần", host: "", attendees: "", location: "", note: "", dept: "" }
                 ]
             }
         ];
 
-        // --- 2. HÀM LOGIC XỬ LÝ (CORE FUNCTIONS) ---
+        // --- 2. HÀM LOGIC XỬ LÝ ---
 
-        // Hàm khởi tạo bộ lọc
         function initFilters() {
             const days = ["Tất cả", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
             const container = document.getElementById('filterContainer');
@@ -140,35 +170,49 @@
             });
         }
 
-        // Hàm render bảng dữ liệu (Thông minh: Tự tính toán Rowspan)
+        function calculateStats() {
+            let totalEvents = 0;
+            let totalBGH = 0;
+            
+            rawScheduleData.forEach(day => {
+                day.events.forEach(evt => {
+                    if (evt.content !== "Nghỉ") totalEvents++;
+                    if (evt.host === "BGH") totalBGH++;
+                });
+            });
+
+            document.getElementById('totalEvents').innerText = totalEvents;
+            document.getElementById('totalBGH').innerText = totalBGH;
+        }
+
         function renderSchedule(filterDay = "Tất cả") {
             const tbody = document.getElementById('scheduleBody');
-            tbody.innerHTML = ''; // Clear old data
+            tbody.innerHTML = ''; 
+
+            let hasData = false;
 
             rawScheduleData.forEach(dayGroup => {
-                // Logic lọc: Nếu không phải "Tất cả" và không trùng ngày thì bỏ qua
                 if (filterDay !== "Tất cả" && dayGroup.day !== filterDay) return;
+                hasData = true;
 
                 const rowCount = dayGroup.events.length;
-
                 dayGroup.events.forEach((evt, index) => {
                     const tr = document.createElement('tr');
 
-                    // Logic tạo cột Ngày (chỉ tạo ở hàng đầu tiên của nhóm ngày)
+                    // Cột ngày (Rowspan)
                     if (index === 0) {
                         const tdDate = document.createElement('td');
                         tdDate.className = 'col-date';
-                        tdDate.rowSpan = rowCount; // AI Logic: Tự gộp dòng dựa trên số sự kiện
+                        tdDate.rowSpan = rowCount;
                         tdDate.innerHTML = `${dayGroup.day}<br><small>${dayGroup.date}</small>`;
                         tr.appendChild(tdDate);
                     }
 
-                    // Xử lý logic Badge (Ví dụ: Nếu chủ trì là BGH thì tô màu vàng)
+                    // Xử lý Badge BGH
                     const hostDisplay = evt.host === 'BGH' || evt.isHighlight 
                         ? `<span class="badge badge-warning">${evt.host}</span>` 
                         : evt.host;
 
-                    // Tạo các cột dữ liệu
                     tr.innerHTML += `
                         <td class="col-time">${evt.time}</td>
                         <td class="col-content">${evt.content}</td>
@@ -182,22 +226,23 @@
                     tbody.appendChild(tr);
                 });
             });
+
+            if (!hasData) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding: 20px;">Không có dữ liệu hiển thị</td></tr>';
+            }
         }
 
-        // Hàm xử lý sự kiện click lọc
         function filterSchedule(selectedDay, btnElement) {
-            // Update UI nút bấm
             document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
-
-            // Render lại bảng
             renderSchedule(selectedDay);
         }
 
-        // --- 3. KHỞI CHẠY ỨNG DỤNG ---
+        // --- 3. KHỞI CHẠY ---
         document.addEventListener('DOMContentLoaded', () => {
             initFilters();
             renderSchedule();
+            calculateStats(); // AI Logic: Tự động đếm số sự kiện
         });
 
     </script>
