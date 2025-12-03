@@ -1,0 +1,20 @@
+{
+  "name": "Lịch Công Tác BHS",
+  "short_name": "Lịch BHS",
+  "start_url": "./app.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4472C4",
+  "icons": [
+    {
+      "src": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
