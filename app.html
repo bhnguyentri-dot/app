@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V9.3 WIDE DAY</title>
+    <title>Lịch Công Tác BHS - V9.5 SMART MERGE</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -25,7 +25,7 @@
         .table-responsive { overflow: auto; max-height: 75vh; border: 1px solid #e0e0e0; border-radius: 8px; position: relative; display: none; scrollbar-width: thin; }
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 14.5px; background-color: white; }
         
-        /* --- HEADER CHUẨN MÀU TRẮNG --- */
+        /* HEADER */
         table.custom-schedule thead th { 
             background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); 
             color: #ffffff !important; 
@@ -37,72 +37,76 @@
             text-transform: uppercase; 
             position: sticky; 
             top: 0; 
-            z-index: 30; 
+            z-index: 40; /* Z-index cao nhất để đè lên sticky nội dung */
             vertical-align: middle;
         }
         
-        table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.6; }
+        table.custom-schedule td { border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; padding: 10px; vertical-align: top; color: #333; line-height: 1.6; }
 
-        /* --- CLASS ẨN CỘT ĐẦU TIÊN (INDEX 0) --- */
-        .col-hidden { display: none !important; }
-
-        /* --- CLASS CỘT THỨ RỘNG (120px) --- */
-        .col-wide-thu {
-            min-width: 120px !important;
-            width: 120px !important;
-            text-align: center;
-        }
-        /* Style riêng cho nội dung cột Thứ (Màu xanh, đậm) */
-        td.col-wide-thu {
-            color: #1565c0 !important;
-            font-weight: 700 !important;
-        }
-        /* Style riêng cho Header cột Thứ (Màu trắng) */
-        th.col-wide-thu {
-            color: #ffffff !important;
-        }
-
-        /* Cột Ngày (Cột thứ 2 -> Giờ thành cột đầu tiên hiển thị) */
-        table.custom-schedule td.col-sticky-date { 
+        /* --- CẤU HÌNH CỘT MERGED (SMART DATE) --- */
+        table.custom-schedule td.col-smart-date { 
             background-color: #f0f7ff; 
-            font-weight: 700; 
-            text-align: center; 
             color: #1565c0; 
-            position: sticky; 
+            position: sticky; /* Sticky cấp 1: Cố định cột bên trái */
             left: 0; 
-            z-index: 10; 
+            z-index: 20; 
             border-right: 2px solid #b0bec5; 
+            padding: 0; /* Xóa padding để sticky bên trong hoạt động sát viền */
+            vertical-align: top; /* Quan trọng để sticky bên trong hoạt động */
+            width: 130px;
+            min-width: 130px;
         }
 
-        /* Cột Thời gian */
+        /* --- SMART STICKY CONTENT (Bên trong ô) --- */
+        .smart-date-inner {
+            position: sticky; /* Sticky cấp 2: Trượt theo khi cuộn dọc */
+            top: 55px; /* Cách mép trên (dưới header) */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .date-day-label { font-size: 1.1em; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 4px; }
+        .date-date-label { font-size: 1.4em; font-weight: 700; display: block; color: #0d47a1; letter-spacing: -0.5px; }
+
+        /* Cột Giờ (Giờ là cột thứ 2) */
         table.custom-schedule td.col-time { 
             font-weight: 700; 
             text-align: center; 
             white-space: nowrap; 
             color: #c62828; 
             background-color: #fff8f8; 
+            vertical-align: middle;
         }
 
         /* --- MOBILE LOGIC --- */
         @media screen and (max-width: 768px) {
-            /* 1. Bỏ cố định cột Ngày trên điện thoại */
-            table.custom-schedule td.col-sticky-date, 
-            table.custom-schedule th.col-sticky-date {
+            /* 1. Bỏ cố định cột Ngày gộp trên điện thoại để tiết kiệm không gian */
+            table.custom-schedule td.col-smart-date, 
+            table.custom-schedule th.col-smart-date {
                 position: static !important;
                 z-index: 1 !important;
                 border-right: 1px solid #e0e0e0 !important;
+                width: auto !important;
+                min-width: 80px !important;
             }
+            .date-day-label { font-size: 0.9em; }
+            .date-date-label { font-size: 1.1em; }
             
             /* 2. Cố định cột Thời Gian trên điện thoại */
             table.custom-schedule td.col-time,
             table.custom-schedule th.col-time {
                 position: sticky !important;
                 left: 0 !important;
-                z-index: 25 !important;
+                z-index: 30 !important;
                 border-right: 2px solid #888 !important;
                 box-shadow: 2px 0 5px rgba(0,0,0,0.1);
             }
-            table.custom-schedule thead th.col-time { z-index: 35 !important; }
+            table.custom-schedule thead th.col-time { z-index: 50 !important; }
             table.custom-schedule td.col-time { background-color: #fff8f8; }
             
             /* Màu cột thời gian sticky khi là Today */
@@ -119,21 +123,19 @@
             color: #000 !important;
             border-bottom: 1px solid #8fd19e !important; 
         }
-        tr.is-today td.col-sticky-date {
+        
+        /* Style riêng cho cột Smart Date khi là Today */
+        tr.is-today td.col-smart-date {
             background-color: #8fd19e !important; 
-            color: #064420 !important;
             border-right: 2px solid #0f5132 !important; 
         }
-        /* Cột Thứ cũng đổi màu xanh đậm khi là Today */
-        tr.is-today td.col-wide-thu {
-            color: #064420 !important;
-        }
+        tr.is-today .date-date-label { color: #000 !important; } /* Chữ ngày màu đen cho nổi */
 
         @media screen and (max-width: 768px) {
-            tr.is-today td.col-sticky-date { border-right: 1px solid #0f5132 !important; }
+            tr.is-today td.col-smart-date { border-right: 1px solid #0f5132 !important; }
         }
 
-        table.custom-schedule tbody tr:hover td:not(.col-sticky-date) { background-color: #fffce7; cursor: default; }
+        table.custom-schedule tbody tr:hover td:not(.col-smart-date) { background-color: #fffce7; cursor: default; }
         
         /* UTILS */
         .filter-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
@@ -183,9 +185,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V9.3
- * - Hide Column Index 0 (Small garbage column).
- * - Widen "Thứ" Column (120px) & Fix Header Color.
+ * AI SUPER-SCHEDULER V9.5
+ * - Feature: SMART MERGE (Gộp Thứ & Ngày thành 1 cột "Smart").
+ * - Tech: Sticky content inside merged cell (Luôn hiển thị ngày khi cuộn).
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -259,14 +261,13 @@ const App = {
             if (row.classList.contains('no-results-row')) continue;
             
             const rowDay = row.getAttribute('data-day');
-            const rowHiddenDay = rowDay ? rowDay.toUpperCase() : '';
             const rowHiddenDate = row.getAttribute('data-date') ? row.getAttribute('data-date').toUpperCase() : '';
             const rowVisibleText = row.textContent.toUpperCase();
 
             const dayMatch = (this.currentFilterDay === 'all') || (rowDay === this.currentFilterDay);
             const searchMatch = textFilter === "" || 
                                 rowVisibleText.includes(textFilter) || 
-                                rowHiddenDay.includes(textFilter) ||
+                                rowDay.toUpperCase().includes(textFilter) ||
                                 rowHiddenDate.includes(textFilter);
             
             row.style.display = (dayMatch && searchMatch) ? "" : "none";
@@ -353,23 +354,71 @@ const App = {
             `;
             dashboardTarget.style.display = "flex";
 
-            const spanMap = this.calculateRowSpans(bodyRows, headers);
-            let bodyHtml = ''; const uniqueDays = new Set();
+            // --- INDEX MAPPING ---
+            // Cột 0: Thứ (sẽ gộp)
+            // Cột 1: Ngày (sẽ gộp)
+            // Cột 2: Thời gian
+            // Cột 3+: Nội dung
+            
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
-            // AI Detect Column Index
             const idxThu = headers.findIndex(c => c.toLowerCase().includes('thứ'));
-            const idxNgay = 1;
+            const idxNgay = 1; // Giả định
 
-            let lastSeenDate = '';
-            let lastSeenDay = '';
+            // Tính toán Rowspan cho cặp (Thứ + Ngày)
+            const rowSpans = [];
+            let currentSpan = 0;
+            for (let i = 0; i < bodyRows.length; i++) {
+                if (i === 0) {
+                    currentSpan = 1;
+                } else {
+                    const prevRow = bodyRows[i-1];
+                    const currRow = bodyRows[i];
+                    // So sánh cả Thứ và Ngày
+                    if ((prevRow[0]||'').trim() === (currRow[0]||'').trim() && 
+                        (prevRow[1]||'').trim() === (currRow[1]||'').trim()) {
+                        rowSpans[i-1] = 0; // Đánh dấu dòng trước là đã được đếm
+                        currentSpan++;
+                    } else {
+                        rowSpans.push(currentSpan); // Lưu span của nhóm trước
+                        currentSpan = 1;
+                    }
+                }
+            }
+            rowSpans.push(currentSpan); // Push span cuối cùng
+            
+            // Map rowSpans ngược lại vào index để dễ dùng
+            const spanMapIndex = {};
+            let counter = 0;
+            // Thuật toán trên hơi ngược, viết lại logic đơn giản hơn:
+            const finalSpans = new Array(bodyRows.length).fill(0);
+            let start = 0;
+            for (let i = 1; i < bodyRows.length; i++) {
+                const prev = bodyRows[i-1];
+                const curr = bodyRows[i];
+                if ((prev[0]||'').trim() === (curr[0]||'').trim() && (prev[1]||'').trim() === (curr[1]||'').trim()) {
+                    // Trùng
+                } else {
+                    finalSpans[start] = i - start;
+                    start = i;
+                }
+            }
+            finalSpans[start] = bodyRows.length - start;
+            
+            // Xử lý Gộp cột thông thường cho các cột khác (Thời gian...)
+            const otherSpanMap = this.calculateRowSpans(bodyRows, headers);
 
-            const headerHtml = headers.map((h, i) => {
-                let extraClass = '';
-                if (i === 0) extraClass += ' col-hidden'; // Ẩn cột đầu tiên
-                if (i === idxThu) extraClass += ' col-wide-thu'; // Mở rộng cột Thứ
-                return `<th class="${extraClass}">${h}</th>`;
-            }).join('');
+            let bodyHtml = ''; const uniqueDays = new Set();
+            let lastSeenDate = ''; let lastSeenDay = '';
+
+            // --- HEADER RENDER ---
+            // Bỏ cột Thứ (0) và Ngày (1), thêm cột Mới vào đầu
+            let headerHtml = `<th class="col-smart-date">NGÀY / THỨ</th>`;
+            headers.forEach((h, i) => {
+                if (i !== 0 && i !== 1) { // Bỏ qua cột gốc
+                    headerHtml += `<th>${h}</th>`;
+                }
+            });
 
             bodyRows.forEach((row, rIdx) => {
                 let dayText = (row[0] || '').trim();
@@ -377,7 +426,6 @@ const App = {
 
                 if (dateText) lastSeenDate = dateText;
                 if (dayText) lastSeenDay = dayText;
-
                 if(lastSeenDay) uniqueDays.add(lastSeenDay);
                 
                 let isToday = false;
@@ -388,8 +436,24 @@ const App = {
 
                 bodyHtml += `<tr data-day="${lastSeenDay}" data-date="${lastSeenDate}" class="${rowClass}">`;
                 
+                // --- CỘT SMART MERGE ---
+                if (finalSpans[rIdx] > 0) {
+                    // Đây là dòng bắt đầu của 1 nhóm ngày
+                    // Format Date: "01/12/2025" -> "01/12"
+                    let shortDate = lastSeenDate.split('/').slice(0,2).join('/');
+                    bodyHtml += `<td class="col-smart-date" rowspan="${finalSpans[rIdx]}">
+                        <div class="smart-date-inner">
+                            <span class="date-day-label">${lastSeenDay}</span>
+                            <span class="date-date-label">${shortDate}</span>
+                        </div>
+                    </td>`;
+                }
+
+                // --- CÁC CỘT CÒN LẠI ---
                 headers.forEach((h, c) => {
-                    if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
+                    if (c === 0 || c === 1) return; // Bỏ qua cột gốc
+
+                    if (otherSpanMap[rIdx] && otherSpanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
                     
                     if(c === idxChuTri) {
@@ -398,14 +462,10 @@ const App = {
                         content = `<span class="tag-bgh">${content}</span>`;
                     }
                     
-                    let cls = (c===0||c===1)?'col-sticky-date': (c===idxTime?'col-time':'');
-                    
-                    // --- ÁP DỤNG CLASS ---
-                    if (c === 0) cls += ' col-hidden';
-                    if (c === idxThu) cls += ' col-wide-thu';
+                    let cls = (c===idxTime?'col-time':'');
                     if (c === idxChuTri) cls += ' align-center';
                     
-                    let rowspan = (spanMap[rIdx][c] > 1) ? ` rowspan="${spanMap[rIdx][c]}"` : '';
+                    let rowspan = (otherSpanMap[rIdx][c] > 1) ? ` rowspan="${otherSpanMap[rIdx][c]}"` : '';
                     bodyHtml += `<td class="${cls}"${rowspan}>${content.replace(/\n/g, '<br>')}</td>`;
                 });
                 bodyHtml += `</tr>`;
@@ -433,13 +493,35 @@ const App = {
 
     calculateRowSpans(bodyRows, headers) {
         if (!bodyRows.length) return [];
-        const colsToMerge = [0, 1, headers.findIndex(c => c.toLowerCase().includes('thời gian'))].filter(i => i !== -1);
+        // Vẫn giữ logic gộp cho cột Thời gian và các cột khác
+        const colsToMerge = [headers.findIndex(c => c.toLowerCase().includes('thời gian'))].filter(i => i !== -1);
+        
+        // Cần tính toán rowspan riêng biệt trong phạm vi của từng Ngày (không được gộp xuyên ngày)
+        // Tuy nhiên, logic đơn giản là: Chỉ gộp nếu cột Ngày (Index 1) cũng giống nhau.
+        // Nhưng ở hàm này ta không có access dễ dàng vào logic đó. 
+        // -> Sửa logic: Gộp nếu [Cột hiện tại] giống VÀ [Cột Ngày] giống.
+        
+        const idxNgay = 1; 
         const spanMap = bodyRows.map(() => Array(headers.length).fill(1));
-        let start = 0;
-        for (let i = 1; i < bodyRows.length; i++) {
-            const match = colsToMerge.every(c => (bodyRows[i][c]||'').trim() === (bodyRows[i-1][c]||'').trim() && (bodyRows[i][c]||''));
-            if (match) { colsToMerge.forEach(c => { spanMap[i][c] = 0; spanMap[start][c]++; }); } else { start = i; }
-        }
+        
+        colsToMerge.forEach(colIdx => {
+             let start = 0;
+             for (let i = 1; i < bodyRows.length; i++) {
+                 const prev = bodyRows[i-1];
+                 const curr = bodyRows[i];
+                 
+                 const valMatch = (prev[colIdx]||'').trim() === (curr[colIdx]||'').trim() && (curr[colIdx]||'');
+                 const dateMatch = (prev[idxNgay]||'').trim() === (curr[idxNgay]||'').trim();
+                 
+                 if (valMatch && dateMatch) {
+                     spanMap[i][colIdx] = 0;
+                     spanMap[start][colIdx]++;
+                 } else {
+                     start = i;
+                 }
+             }
+        });
+        
         return spanMap;
     }
 };
