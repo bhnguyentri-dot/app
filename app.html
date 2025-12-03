@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v6.1 - Smart Caching</title>
+    <title>Lịch Công Tác Thông Minh v6.2 - Auto Update</title>
     <style>
         /* --- CORE RESET & FONT --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
@@ -127,8 +127,8 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER v6.1 (Smart Caching Edition)
- * Fixed & Optimized by Gemini Code Assist
+ * AI SUPER-SCHEDULER v6.2 (Integrate Auto-Update)
+ * Fix lỗi: Gộp tất cả script vào một khối duy nhất để tránh lỗi hiển thị text.
  */
 const CONFIG = {
     sheetID: '2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A',
@@ -333,7 +333,7 @@ const App = {
 
                 // Gửi thông báo gốc của trình duyệt nếu được phép
                 if ('Notification' in window && Notification.permission === 'granted') {
-                    const iconUrl = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗓️</text></svg>';
+                    const iconUrl = 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png';
                     new Notification('Lịch Công Tác', { body: 'Vừa có cập nhật mới!', icon: iconUrl, tag: 'schedule-update' });
                 }
             }
@@ -519,8 +519,57 @@ const App = {
     }
 };
 
-// Khởi chạy
+/**
+ * AI SYSTEM: THEO DÕI CẬP NHẬT GITHUB PAGES (Chạy song song)
+ * Tự động reload trang khi file app.html trên server thay đổi.
+ */
+function initGitHubUpdateTracker() {
+    if (!("Notification" in window)) return;
+    
+    // Yêu cầu quyền nếu chưa có
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
+
+    const currentUrl = window.location.href.split('?')[0]; 
+    const checkInterval = 30000; // 30s check 1 lần
+    let storedLastModified = localStorage.getItem('gh_last_modified');
+
+    setInterval(async () => {
+        try {
+            const checkUrl = currentUrl + '?t=' + new Date().getTime();
+            const response = await fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' });
+
+            if (response.ok) {
+                const newLastModified = response.headers.get('last-modified');
+                if (!storedLastModified) {
+                    storedLastModified = newLastModified;
+                    localStorage.setItem('gh_last_modified', newLastModified);
+                    return;
+                }
+
+                if (newLastModified && newLastModified !== storedLastModified) {
+                    console.log("GitHub Page Updated:", newLastModified);
+                    storedLastModified = newLastModified;
+                    localStorage.setItem('gh_last_modified', newLastModified);
+
+                    if (Notification.permission === "granted") {
+                        const n = new Notification("Cập Nhật Hệ Thống!", {
+                            body: "Trang web đã có phiên bản mới. Bấm để tải lại.",
+                            icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                            requireInteraction: true
+                        });
+                        n.onclick = function() { window.location.reload(); n.close(); };
+                    }
+                }
+            }
+        } catch (e) { console.error("Update Check Error:", e); }
+    }, checkInterval);
+}
+
+// KHỞI CHẠY TOÀN BỘ HỆ THỐNG
 App.init();
+initGitHubUpdateTracker();
 </script>
 </body>
 </html>
