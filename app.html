@@ -522,66 +522,66 @@ const App = {
 // Khởi chạy
 App.init();
 </script>
-</body>
-    /**
+    <script>
+/**
  * Hệ thống theo dõi và thông báo cập nhật phiên bản Web
- * AI Upgrade: Sử dụng HEAD request để tối ưu hiệu suất và bandwidth.
+ * AI Upgrade: Đã tối ưu hóa cú pháp để an toàn khi minify hoặc copy gộp dòng.
  */
 function initNotificationSystem() {
-    // 1. Yêu cầu quyền thông báo ngay khi tải trang
+    /* 1. Yêu cầu quyền thông báo ngay khi tải trang */
     if (!("Notification" in window)) {
         console.log("Trình duyệt này không hỗ trợ thông báo hệ thống.");
         return;
     }
 
     if (Notification.permission !== "granted") {
-        Notification.requestPermission().then(permission => {
+        Notification.requestPermission().then(function(permission) {
             if (permission === "granted") {
                 console.log("Đã cấp quyền thông báo.");
             }
         });
     }
 
-    // 2. Cấu hình hệ thống
-    const currentUrl = window.location.href.split('?')[0]; // Lấy URL gốc
-    const checkInterval = 30000; // Kiểm tra mỗi 30 giây (có thể chỉnh sửa)
-    let storedLastModified = localStorage.getItem('app_last_modified');
+    /* 2. Cấu hình hệ thống */
+    var currentUrl = window.location.href.split('?')[0]; 
+    var checkInterval = 30000; /* 30 giây check 1 lần */
+    var storedLastModified = localStorage.getItem('app_last_modified');
 
     console.log("Hệ thống theo dõi cập nhật đã kích hoạt...");
 
-    // 3. Hàm logic kiểm tra sự thay đổi (Giữ nguyên tên function theo logic cốt lõi)
+    /* 3. Hàm logic kiểm tra sự thay đổi */
     setInterval(checkForUpdates, checkInterval);
 
     async function checkForUpdates() {
         try {
-            // Thêm timestamp để tránh browser cache
-            const checkUrl = `${currentUrl}?t=${new Date().getTime()}`;
+            /* Thêm timestamp để tránh browser cache tuyệt đối */
+            var checkUrl = currentUrl + '?t=' + new Date().getTime();
             
-            // Chỉ lấy Header để nhẹ gánh server
-            const response = await fetch(checkUrl, {
+            /* Chỉ lấy Header để nhẹ gánh server */
+            var response = await fetch(checkUrl, {
                 method: 'HEAD',
                 cache: 'no-cache'
             });
 
             if (response.ok) {
-                const newLastModified = response.headers.get('last-modified');
+                var newLastModified = response.headers.get('last-modified');
 
-                // Nếu chưa có dữ liệu cũ, lưu lại mốc hiện tại
+                /* Nếu chưa có dữ liệu cũ, lưu lại mốc hiện tại */
                 if (!storedLastModified) {
                     storedLastModified = newLastModified;
                     localStorage.setItem('app_last_modified', newLastModified);
                     return;
                 }
 
-                // So sánh: Nếu server trả về ngày mới khác với ngày đã lưu
+                /* So sánh: Nếu server trả về ngày mới khác với ngày đã lưu */
                 if (newLastModified && newLastModified !== storedLastModified) {
                     console.log("Phát hiện phiên bản mới:", newLastModified);
                     
-                    // Cập nhật mốc thời gian mới
+                    /* Cập nhật mốc thời gian mới */
                     storedLastModified = newLastModified;
                     localStorage.setItem('app_last_modified', newLastModified);
 
-                    // 4. Kích hoạt thông báo
+                    /* 4. Kích hoạt thông báo */
                     sendBrowserNotification("Cập Nhật Mới!", "Nội dung trang web đã thay đổi. Bấm để tải lại.");
                 }
             }
@@ -592,21 +592,22 @@ function initNotificationSystem() {
 
     function sendBrowserNotification(title, body) {
         if (Notification.permission === "granted") {
-            const notification = new Notification(title, {
+            var notification = new Notification(title, {
                 body: body,
-                icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png", // Icon mặc định hoặc thay bằng icon app của bạn
-                requireInteraction: true // Giữ thông báo hiển thị đến khi click
+                icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                requireInteraction: true
             });
 
             notification.onclick = function() {
-                window.location.reload(); // Tự động reload trang khi bấm vào thông báo
+                window.location.reload(); 
                 notification.close();
             };
         }
     }
 }
 
-// Khởi chạy hệ thống
+/* Khởi chạy hệ thống */
 initNotificationSystem();
+</script>
+</body>
 </html>
-
