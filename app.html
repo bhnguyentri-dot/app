@@ -523,4 +523,90 @@ const App = {
 App.init();
 </script>
 </body>
+    /**
+ * Hệ thống theo dõi và thông báo cập nhật phiên bản Web
+ * AI Upgrade: Sử dụng HEAD request để tối ưu hiệu suất và bandwidth.
+ */
+function initNotificationSystem() {
+    // 1. Yêu cầu quyền thông báo ngay khi tải trang
+    if (!("Notification" in window)) {
+        console.log("Trình duyệt này không hỗ trợ thông báo hệ thống.");
+        return;
+    }
+
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                console.log("Đã cấp quyền thông báo.");
+            }
+        });
+    }
+
+    // 2. Cấu hình hệ thống
+    const currentUrl = window.location.href.split('?')[0]; // Lấy URL gốc
+    const checkInterval = 30000; // Kiểm tra mỗi 30 giây (có thể chỉnh sửa)
+    let storedLastModified = localStorage.getItem('app_last_modified');
+
+    console.log("Hệ thống theo dõi cập nhật đã kích hoạt...");
+
+    // 3. Hàm logic kiểm tra sự thay đổi (Giữ nguyên tên function theo logic cốt lõi)
+    setInterval(checkForUpdates, checkInterval);
+
+    async function checkForUpdates() {
+        try {
+            // Thêm timestamp để tránh browser cache
+            const checkUrl = `${currentUrl}?t=${new Date().getTime()}`;
+            
+            // Chỉ lấy Header để nhẹ gánh server
+            const response = await fetch(checkUrl, {
+                method: 'HEAD',
+                cache: 'no-cache'
+            });
+
+            if (response.ok) {
+                const newLastModified = response.headers.get('last-modified');
+
+                // Nếu chưa có dữ liệu cũ, lưu lại mốc hiện tại
+                if (!storedLastModified) {
+                    storedLastModified = newLastModified;
+                    localStorage.setItem('app_last_modified', newLastModified);
+                    return;
+                }
+
+                // So sánh: Nếu server trả về ngày mới khác với ngày đã lưu
+                if (newLastModified && newLastModified !== storedLastModified) {
+                    console.log("Phát hiện phiên bản mới:", newLastModified);
+                    
+                    // Cập nhật mốc thời gian mới
+                    storedLastModified = newLastModified;
+                    localStorage.setItem('app_last_modified', newLastModified);
+
+                    // 4. Kích hoạt thông báo
+                    sendBrowserNotification("Cập Nhật Mới!", "Nội dung trang web đã thay đổi. Bấm để tải lại.");
+                }
+            }
+        } catch (error) {
+            console.error("Lỗi khi kiểm tra cập nhật:", error);
+        }
+    }
+
+    function sendBrowserNotification(title, body) {
+        if (Notification.permission === "granted") {
+            const notification = new Notification(title, {
+                body: body,
+                icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png", // Icon mặc định hoặc thay bằng icon app của bạn
+                requireInteraction: true // Giữ thông báo hiển thị đến khi click
+            });
+
+            notification.onclick = function() {
+                window.location.reload(); // Tự động reload trang khi bấm vào thông báo
+                notification.close();
+            };
+        }
+    }
+}
+
+// Khởi chạy hệ thống
+initNotificationSystem();
 </html>
+
