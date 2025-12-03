@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác Thông Minh v6.5 - Fix Code Lộ Thiên</title>
+    <title>Lịch Công Tác Thông Minh v6.6 - Data Realtime</title>
     <style>
         /* --- CORE RESET & FONT --- */
         body { margin: 0; padding: 0; background-color: #f4f6f9; }
@@ -96,8 +96,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER v6.5
- * Sửa lỗi triệt để: Đảm bảo script nằm trong thẻ script
+ * AI SUPER-SCHEDULER v6.6
+ * Nâng cấp: Theo dõi trực tiếp dữ liệu Google Sheet thay vì file code.
+ * Fix lỗi: Chống cache khi load dữ liệu.
  */
 const CONFIG = {
     sheetID: '2PACX-1vSheQFXC-BtDQtik0k6-_exzRtP2qt7sVhPOnnYsJv-aR5gDWIasN8XS8rqXrAcmopof0utvzZZHe0A',
@@ -114,12 +115,13 @@ const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 
 const App = {
     currentFilterDay: 'all',
     CACHE_KEY: 'smart_schedule_cache_v1',
+    DATA_HASH_KEY: 'smart_schedule_hash_v1',
 
     init() {
         document.addEventListener('DOMContentLoaded', () => {
             this.loadFromCache();
-            this.loadScheduleData();
-            initGitHubUpdateTracker(); // Khởi động hệ thống check update
+            this.loadScheduleData(false); // Load lần đầu không thông báo
+            this.initDataAutoUpdate(); // Bắt đầu theo dõi ngầm
         });
     },
 
@@ -173,28 +175,76 @@ const App = {
         if (cached) this.renderProfessionalTable(cached, false);
     },
 
-    loadScheduleData() {
-        const sourceUrl = `https://docs.google.com/spreadsheets/d/e/${CONFIG.sheetID}/pub?gid=${CONFIG.sheetGid}&single=true&output=csv`;
+    // Hàm tải dữ liệu chính (Có tham số isBackground để phân biệt chạy ngầm hay chạy chính)
+    loadScheduleData(isBackground = false) {
+        // THỦ THUẬT: Thêm &t=thời_gian để lừa trình duyệt tải mới 100%
+        const timestamp = new Date().getTime();
+        const sourceUrl = `https://docs.google.com/spreadsheets/d/e/${CONFIG.sheetID}/pub?gid=${CONFIG.sheetGid}&single=true&output=csv&t=${timestamp}`;
+        
+        const fetchSuccess = (csv) => {
+            if(isBackground) {
+                // Nếu chạy ngầm: Chỉ so sánh, không render lại ngay
+                this.checkDataChange(csv);
+            } else {
+                // Nếu chạy chính: Lưu và Render luôn
+                this.processNewData(csv);
+            }
+        };
+
         fetch(CONFIG.proxies[0] + encodeURIComponent(sourceUrl))
             .then(res => res.ok ? res.text() : Promise.reject())
-            .then(csv => this.processNewData(csv))
+            .then(fetchSuccess)
             .catch(() => {
+                // Thử Proxy 2
                 fetch(CONFIG.proxies[1] + encodeURIComponent(sourceUrl))
                     .then(r => r.ok ? r.text() : Promise.reject())
-                    .then(csv => this.processNewData(csv))
-                    .catch(() => { if(!localStorage.getItem(this.CACHE_KEY)) this.renderProfessionalTable(FALLBACK_DATA, true); });
+                    .then(fetchSuccess)
+                    .catch(() => { 
+                        if(!isBackground && !localStorage.getItem(this.CACHE_KEY)) 
+                            this.renderProfessionalTable(FALLBACK_DATA, true); 
+                    });
             });
     },
 
     processNewData(newCsv) {
-        const oldCsv = localStorage.getItem(this.CACHE_KEY);
-        if (oldCsv && oldCsv !== newCsv) {
+        localStorage.setItem(this.CACHE_KEY, newCsv);
+        // Lưu lại độ dài dữ liệu để so sánh nhanh
+        localStorage.setItem(this.DATA_HASH_KEY, newCsv.length); 
+        this.renderProfessionalTable(newCsv);
+    },
+
+    // Kiểm tra xem dữ liệu mới có khác dữ liệu cũ không
+    checkDataChange(newCsv) {
+        const oldHash = localStorage.getItem(this.DATA_HASH_KEY);
+        // So sánh độ dài chuỗi (Cách nhanh nhất để biết có thay đổi)
+        if (oldHash && parseInt(oldHash) !== newCsv.length) {
+            console.log("Phát hiện dữ liệu Sheet thay đổi!");
+            
+            // Cập nhật dữ liệu ngầm
+            localStorage.setItem(this.CACHE_KEY, newCsv);
+            localStorage.setItem(this.DATA_HASH_KEY, newCsv.length);
+
+            // Gửi thông báo
             if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('Lịch Công Tác', { body: 'Dữ liệu lịch đã thay đổi!', icon: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png' });
+                const n = new Notification('Lịch Công Tác', { 
+                    body: 'Nội dung trên Google Sheet vừa thay đổi. Bấm để xem ngay!', 
+                    icon: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+                    requireInteraction: true 
+                });
+                n.onclick = function() { window.location.reload(); n.close(); };
             }
         }
-        localStorage.setItem(this.CACHE_KEY, newCsv);
-        this.renderProfessionalTable(newCsv);
+    },
+
+    // Hệ thống tự động theo dõi dữ liệu (Mỗi 30 giây)
+    initDataAutoUpdate() {
+        if (!("Notification" in window)) return;
+        if (Notification.permission !== "granted") Notification.requestPermission();
+        
+        setInterval(() => {
+            console.log("Đang kiểm tra Google Sheet...");
+            this.loadScheduleData(true); // true = Chạy ngầm
+        }, 30000); // 30 giây check 1 lần
     },
 
     renderProfessionalTable(csvText, isDemo = false) {
@@ -223,7 +273,7 @@ const App = {
                 <div class="stat-card">Tổng sự kiện: <span>${bodyRows.length}</span></div>
                 <div class="stat-card">Họp BGH: <span>${bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length}</span></div>
                 <div class="stat-card" style="border-left-color: #28a745;">
-                    Trạng thái: <span id="notify-status" style="color:#28a745; font-size: 1em;">Đang chạy</span>
+                    Trạng thái: <span id="notify-status" style="color:#28a745; font-size: 1em;">Đang theo dõi Sheet</span>
                     <button class="btn-test-notify" onclick="forceTestNotification()">🔔 Test Thông Báo</button>
                 </div>
             `;
@@ -284,53 +334,13 @@ const App = {
     }
 };
 
-/**
- * LOGIC THÔNG BÁO CẬP NHẬT (1 PHÚT)
- */
-function initGitHubUpdateTracker() {
-    if (!("Notification" in window)) return;
-    if (Notification.permission !== "granted") Notification.requestPermission();
-
-    const currentUrl = window.location.href.split('?')[0]; 
-    const checkInterval = 60000; // 1 phút
-    let storedLastModified = localStorage.getItem('gh_last_modified');
-
-    setInterval(async () => {
-        try {
-            const response = await fetch(currentUrl + '?t=' + new Date().getTime(), { method: 'HEAD', cache: 'no-cache' });
-            if (response.ok) {
-                const newLastModified = response.headers.get('last-modified');
-                if (!storedLastModified) {
-                    storedLastModified = newLastModified;
-                    localStorage.setItem('gh_last_modified', newLastModified);
-                    return;
-                }
-                if (newLastModified && newLastModified !== storedLastModified) {
-                    storedLastModified = newLastModified;
-                    localStorage.setItem('gh_last_modified', newLastModified);
-                    if (Notification.permission === "granted") {
-                        const n = new Notification("Cập Nhật Hệ Thống!", {
-                            body: "Trang web đã có phiên bản mới. Bấm để tải lại.",
-                            icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-                            requireInteraction: true
-                        });
-                        n.onclick = function() { window.location.reload(); n.close(); };
-                    }
-                }
-            }
-        } catch (e) { console.error("Update Check Error:", e); }
-    }, checkInterval);
-}
-
 // Hàm Test Thông Báo Thủ Công
 function forceTestNotification() {
-    console.log("Đang thử kích hoạt thông báo..."); // Check console để thấy dòng này
-    
+    console.log("Đang thử kích hoạt thông báo...");
     if (!("Notification" in window)) { alert("Trình duyệt không hỗ trợ!"); return; }
-    
     if (Notification.permission === "granted") {
-        new Notification("🔔 Kiểm Tra Thành Công!", {
-            body: "Hệ thống thông báo hoạt động tốt.",
+        new Notification("🔔 Kết nối Google Sheet OK", {
+            body: "Đã bật chế độ tự động dò tìm dữ liệu mới mỗi 30 giây.",
             icon: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
         });
     } else if (Notification.permission !== "denied") {
@@ -338,7 +348,7 @@ function forceTestNotification() {
             if (permission === "granted") forceTestNotification();
         });
     } else {
-        alert("Bạn đã chặn thông báo! Hãy mở khóa (hình ổ khóa trên thanh địa chỉ).");
+        alert("Bạn đang chặn thông báo trên Windows hoặc Trình duyệt!");
     }
 }
 
