@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V10.3 AUTO DATE</title>
+    <title>Lịch Công Tác BHS - V10.4 ICON UPDATE</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
+    
+    <link rel="icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
+    <link rel="shortcut icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
     
     <style>
@@ -154,9 +157,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V10.3 - AUTO DATE SELECTION
- * - Feature: Automatically detects the current day of the week and activates the corresponding filter.
- * - Logic: JS Date().getDay() mapping -> Auto Trigger Click.
+ * AI SUPER-SCHEDULER V10.4 - ICON UPDATE
+ * - Feature: Updated all Favicon/Apple-Touch-Icon links to user defined URL.
+ * - Logic: Auto-Select Day and Sticky Headers retained.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -167,7 +170,7 @@ const TAG_COLOR_MAP = { "BGH": "tag-bgh" };
 const TAG_REGEX = new RegExp(`\\b(${Object.keys(TAG_COLOR_MAP).join('|')})\\b`, 'g');
 
 const App = {
-    currentFilterDay: 'all', // Mặc định là all, sẽ bị ghi đè bởi autoSelectCurrentDay
+    currentFilterDay: 'all', 
     CACHE_KEY: 'instant_schedule_data_v9',
     HASH_KEY: 'instant_schedule_hash_v9',
     deferredPrompt: null,
@@ -175,7 +178,7 @@ const App = {
     init() {
         document.addEventListener('DOMContentLoaded', () => {
             this.renderFixedFilterButtons();
-            this.autoSelectCurrentDay(); // <--- TỰ ĐỘNG CHỌN NGÀY TẠI ĐÂY
+            this.autoSelectCurrentDay(); 
             this.registerServiceWorker();
             this.loadFromCache();
             this.loadScheduleData(false);
@@ -186,7 +189,6 @@ const App = {
 
     renderFixedFilterButtons() {
         const standardDays = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
-        // Mặc định nút "Tất cả" sẽ KHÔNG có class active ngay lúc đầu, để dành cho hàm autoSelect xử lý
         let html = `<button class="filter-btn" data-day="all" onclick="App.setDayFilter('all', this)">Tất cả</button>`;
         standardDays.forEach(day => {
             html += `<button class="filter-btn" data-day="${day}" onclick="App.setDayFilter('${day}', this)">${day}</button>`;
@@ -195,21 +197,16 @@ const App = {
         document.getElementById('day-filters').style.display = 'flex';
     },
 
-    // --- LOGIC MỚI: TỰ ĐỘNG CHỌN NGÀY ---
     autoSelectCurrentDay() {
-        // Mảng ánh xạ từ getDay() (0-6) sang Tên nút
         const mapDay = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-        const todayIndex = new Date().getDay(); // 0 = CN, 1 = T2...
+        const todayIndex = new Date().getDay(); 
         const todayLabel = mapDay[todayIndex];
 
-        // Tìm nút tương ứng trong DOM
         const btn = document.querySelector(`.filter-btn[data-day="${todayLabel}"]`);
         
         if (btn) {
-            // Nếu tìm thấy nút đúng ngày hôm nay -> Kích hoạt
             this.setDayFilter(todayLabel, btn);
         } else {
-            // Trường hợp dự phòng -> Kích hoạt "Tất cả"
             const allBtn = document.querySelector(`.filter-btn[data-day="all"]`);
             if(allBtn) this.setDayFilter('all', allBtn);
         }
@@ -266,16 +263,13 @@ const App = {
 
     setDayFilter(day, btnElement) {
         this.currentFilterDay = day;
-        // Xóa active cũ
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        // Thêm active mới
         if(btnElement) btnElement.classList.add('active');
-        // Gọi lọc bảng
         this.filterTable();
     },
     
     scrollToToday() {
-        this.autoSelectCurrentDay(); // Reset về ngày hôm nay
+        this.autoSelectCurrentDay();
         setTimeout(() => {
             const todayRow = document.querySelector('tr.is-today');
             if(todayRow) {
@@ -284,9 +278,6 @@ const App = {
                 const originalBg = todayRow.style.backgroundColor;
                 todayRow.style.backgroundColor = '#86e49d';
                 setTimeout(() => { todayRow.style.backgroundColor = originalBg; }, 1000);
-            } else { 
-                // Nếu đang lọc ngày hôm nay mà vẫn không thấy dòng today -> Nghĩa là không có lịch
-                // Có thể báo: "Hôm nay không có lịch"
             }
         }, 100);
     },
@@ -411,7 +402,6 @@ const App = {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-table').style.display = 'block';
             
-            // Gọi lại filterTable để áp dụng bộ lọc ngày đã chọn ở hàm init
             this.filterTable();
             
             setTimeout(() => {
