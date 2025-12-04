@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V10.6 TAP HIGHLIGHT</title>
+    <title>Lịch Công Tác BHS - V10.8 BGH HIGHLIGHT EXPANSION</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     
@@ -66,20 +66,14 @@
 
         table.custom-schedule td { 
             border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; 
-            padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.5; cursor: pointer; /* Thêm con trỏ tay */
+            padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.5; cursor: pointer; 
         }
         
-        /* --- AI FEATURE: ROW SELECTION HIGHLIGHT --- */
-        /* Hiệu ứng khi click chọn dòng */
-        tr.row-selected td {
-            background-color: #ffe082 !important; /* Màu nền vàng cam */
-            color: #000 !important;
-        }
-        /* Xử lý màu cho các cột dính khi dòng được chọn */
+        /* HIGHLIGHT ROW SELECTED */
+        tr.row-selected td { background-color: #ffe082 !important; color: #000 !important; }
         tr.row-selected td.col-sticky-date { background-color: #ffca28 !important; color: #000 !important; border-right: 2px solid #ff6f00 !important; }
         tr.row-selected td.col-time { background-color: #ffd54f !important; color: #b71c1c !important; }
         
-        /* Hover nhẹ cho Desktop */
         @media (hover: hover) {
             table.custom-schedule tbody tr:hover td { background-color: #f1f8ff; }
         }
@@ -108,7 +102,6 @@
             table.custom-schedule thead th { position: sticky !important; top: 0 !important; z-index: 40 !important; }
             table.custom-schedule thead th.col-time { position: sticky !important; left: 0 !important; top: 0 !important; z-index: 50 !important; border-right: 2px solid #fff !important; background: #365da3 !important; }
             
-            /* Giữ màu today, nhưng nếu click chọn thì màu selected sẽ đè lên nhờ !important ở trên */
             tr.is-today td.col-time { background-color: #8fd19e !important; border-right: 2px solid #0f5132 !important; }
         }
 
@@ -146,9 +139,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V10.6 - TAP TO HIGHLIGHT
- * - Feature: Tap/Click on any row to highlight it (Orange/Yellow).
- * - Logic: Added event listeners to table rows to toggle 'row-selected' class.
+ * AI SUPER-SCHEDULER V10.8 - BGH HIGHLIGHT EXPANSION
+ * - Feature: Applied BGH tag highlighting to BOTH "Chủ trì" and "Thành phần" columns.
+ * - Logic: Updated column index check in rendering loop.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -311,6 +304,16 @@ const App = {
         return [`${d < 10 ? '0' + d : d}/${m < 10 ? '0' + m : m}`, `${d}/${m < 10 ? '0' + m : m}`];
     },
 
+    getFullDateDisplay() {
+        const date = new Date();
+        const dayNames = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+        const dayName = dayNames[date.getDay()];
+        const d = date.getDate();
+        const m = date.getMonth() + 1;
+        const y = date.getFullYear();
+        return `${dayName} - ${d}/${m}/${y}`;
+    },
+
     renderProfessionalTable(csvText, isDemo = false) {
         try {
             const rawData = this.parseCSV(csvText);
@@ -326,12 +329,14 @@ const App = {
             const todayFormats = this.getTodayString(); 
             const bghCount = bodyRows.filter(r => r.join(' ').toUpperCase().includes('BGH')).length;
             
+            const fullDateStr = this.getFullDateDisplay();
+
             const dashboardTarget = document.getElementById('ai-dashboard');
             dashboardTarget.innerHTML = `
                 <div class="stat-card">Sự kiện: <span class="stat-num">${bodyRows.length}</span></div>
                 <div class="stat-card">Lịch BGH: <span class="stat-num">${bghCount}</span></div>
                 <div class="stat-card clickable" onclick="App.scrollToToday()" title="Bấm để xem lịch hôm nay">
-                    Hôm nay: <span class="stat-date">${todayFormats[1]}</span>
+                    Hôm nay: <span class="stat-date">${fullDateStr}</span>
                 </div>
             `;
             dashboardTarget.style.display = "flex";
@@ -341,6 +346,8 @@ const App = {
             
             const idxTime = headers.findIndex(c => c.toLowerCase().includes('thời gian'));
             const idxChuTri = headers.findIndex(c => c.toLowerCase().includes('chủ trì'));
+            // --- THÊM: Tìm cột Thành Phần ---
+            const idxThanhPhan = headers.findIndex(c => c.toLowerCase().includes('thành phần'));
             const idxThu = headers.findIndex(c => c.toLowerCase().includes('thứ'));
             const idxNgay = headers.findIndex(c => c.toLowerCase().includes('ngày'));
 
@@ -372,8 +379,13 @@ const App = {
                     let displayStyle = (h.trim() === '') ? 'display: none;' : '';
                     if (spanMap[rIdx] && spanMap[rIdx][c] === 0) return;
                     let content = row[c] || '';
-                    if(c === idxChuTri) content = content.replace(TAG_REGEX, m => `<span class="${TAG_COLOR_MAP[m]}">${m}</span>`);
-                    else if (content === 'BGH') content = `<span class="tag-bgh">${content}</span>`;
+                    
+                    // --- LOGIC MỚI: Áp dụng Tag BGH cho cả Chủ trì VÀ Thành phần ---
+                    if(c === idxChuTri || c === idxThanhPhan) {
+                        content = content.replace(TAG_REGEX, m => `<span class="${TAG_COLOR_MAP[m]}">${m}</span>`);
+                    } else if (content === 'BGH') {
+                        content = `<span class="tag-bgh">${content}</span>`;
+                    }
                     
                     let cls = (c === idxNgay) ? 'col-sticky-date' : (c === idxTime ? 'col-time' : '');
                     if (c === idxThu) cls += ' col-thu';
@@ -389,13 +401,10 @@ const App = {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-table').style.display = 'block';
             
-            // --- THÊM SỰ KIỆN CLICK CHO DÒNG ---
             const tableRows = document.querySelectorAll('table.custom-schedule tbody tr');
             tableRows.forEach(row => {
                 row.addEventListener('click', function() {
-                    // Bỏ chọn tất cả dòng khác
                     tableRows.forEach(r => r.classList.remove('row-selected'));
-                    // Chọn dòng hiện tại
                     this.classList.add('row-selected');
                 });
             });
