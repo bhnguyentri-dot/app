@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V10.5 ICON FIX PRO</title>
+    <title>Lịch Công Tác BHS - V10.6 TAP HIGHLIGHT</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     
@@ -15,21 +15,19 @@
         /* --- CSS BASE --- */
         body { margin: 0; padding: 0; background-color: #fff; scroll-behavior: smooth; overflow-x: hidden; }
         
-        /* CONTAINER TRÀN VIỀN */
         #schedule-container { 
             font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; width: 100%; max-width: 100%; box-sizing: border-box; 
             color: #333; background: white; padding: 10px; min-height: 100vh;
         }
         
-        /* HEADER STYLE */
         .schedule-header h2 { 
             text-align: center; color: #1a237e; margin: 10px 0 20px 0; 
             text-transform: uppercase; font-size: 24px; font-weight: 900; 
             text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
-        /* DASHBOARD STYLE */
+        /* DASHBOARD & FILTER */
         .dashboard-panel { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; display: none; }
         .stat-card { 
             background: white; padding: 10px 25px; border-radius: 12px; border: 1px solid #e0e0e0; 
@@ -40,14 +38,12 @@
         .stat-card span.stat-date { color: #198754; font-size: 1.2em; font-weight: 800; }
         .stat-card.clickable { cursor: pointer; border-color: #198754; }
 
-        /* FILTER BUTTONS STYLE */
         .filter-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .filter-btn { 
             padding: 8px 20px; border: 1px solid #e0e0e0; background: #f8f9fa; border-radius: 20px; 
             cursor: pointer; font-size: 14px; font-weight: 600; color: #5f6368; 
             transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .filter-btn:hover { background-color: #e8f0fe; color: #1a73e8; }
         .filter-btn.active { 
             background: linear-gradient(135deg, #4472C4 0%, #2b4f94 100%); color: white; border-color: transparent; 
             box-shadow: 0 4px 10px rgba(60, 100, 193, 0.4);
@@ -61,7 +57,6 @@
         
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 15px; background-color: white; }
         
-        /* GLOBAL STICKY HEADER (PC) */
         table.custom-schedule thead th { 
             background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); color: #ffffff !important; 
             padding: 16px 10px; text-align: center; border-right: 1px solid rgba(255,255,255,0.2); 
@@ -71,14 +66,27 @@
 
         table.custom-schedule td { 
             border-bottom: 1px solid #e0e0e0; border-right: 1px solid #e0e0e0; 
-            padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.5; 
+            padding: 12px 14px; vertical-align: middle; color: #333; line-height: 1.5; cursor: pointer; /* Thêm con trỏ tay */
         }
-        table.custom-schedule tbody tr:hover td { background-color: #f1f8ff; }
+        
+        /* --- AI FEATURE: ROW SELECTION HIGHLIGHT --- */
+        /* Hiệu ứng khi click chọn dòng */
+        tr.row-selected td {
+            background-color: #ffe082 !important; /* Màu nền vàng cam */
+            color: #000 !important;
+        }
+        /* Xử lý màu cho các cột dính khi dòng được chọn */
+        tr.row-selected td.col-sticky-date { background-color: #ffca28 !important; color: #000 !important; border-right: 2px solid #ff6f00 !important; }
+        tr.row-selected td.col-time { background-color: #ffd54f !important; color: #b71c1c !important; }
+        
+        /* Hover nhẹ cho Desktop */
+        @media (hover: hover) {
+            table.custom-schedule tbody tr:hover td { background-color: #f1f8ff; }
+        }
 
         .col-hidden { display: none !important; }
         .col-thu { min-width: 80px !important; text-align: center; font-weight: 700 !important; color: #1565c0 !important; }
 
-        /* STICKY COLUMNS (PC Logic) */
         table.custom-schedule td.col-sticky-date, table.custom-schedule th.col-sticky-date { 
             background-color: #f8fbff; font-weight: 700; text-align: center; color: #1565c0; 
             position: sticky; left: 0; z-index: 10; border-right: 2px solid #b0bec5; 
@@ -89,37 +97,18 @@
             font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fffafa; 
         }
 
-        /* --- MOBILE SPECIFIC FIXES --- */
+        /* MOBILE FIXES */
         @media screen and (max-width: 768px) {
             #schedule-container { padding: 5px; }
             .schedule-header h2 { font-size: 18px; margin-bottom: 15px; }
             
-            /* HEADER NGÀY: Giữ sticky */
-            table.custom-schedule td.col-sticky-date { 
-                position: static !important; z-index: 1 !important; border-right: 1px solid #e0e0e0 !important; 
-            }
-            table.custom-schedule th.col-sticky-date {
-                position: sticky !important; top: 0 !important; left: 0 !important; 
-                z-index: 40 !important; border-right: 1px solid rgba(255,255,255,0.2) !important;
-            }
-
-            /* Cột Thời Gian: Sticky Left */
-            table.custom-schedule td.col-time { 
-                position: sticky !important; left: 0 !important; z-index: 25 !important; 
-                border-right: 2px solid #888 !important; box-shadow: 2px 0 5px rgba(0,0,0,0.1); 
-            }
-
-            /* Header Chung: Sticky Top */
-            table.custom-schedule thead th {
-                position: sticky !important; top: 0 !important; z-index: 40 !important;
-            }
-
-            /* Giao nhau Header Thời Gian: Max Index */
-            table.custom-schedule thead th.col-time {
-                position: sticky !important; left: 0 !important; top: 0 !important;
-                z-index: 50 !important; border-right: 2px solid #fff !important; background: #365da3 !important;
-            }
-
+            table.custom-schedule td.col-sticky-date { position: static !important; z-index: 1 !important; border-right: 1px solid #e0e0e0 !important; }
+            table.custom-schedule th.col-sticky-date { position: sticky !important; top: 0 !important; left: 0 !important; z-index: 40 !important; border-right: 1px solid rgba(255,255,255,0.2) !important; }
+            table.custom-schedule td.col-time { position: sticky !important; left: 0 !important; z-index: 25 !important; border-right: 2px solid #888 !important; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+            table.custom-schedule thead th { position: sticky !important; top: 0 !important; z-index: 40 !important; }
+            table.custom-schedule thead th.col-time { position: sticky !important; left: 0 !important; top: 0 !important; z-index: 50 !important; border-right: 2px solid #fff !important; background: #365da3 !important; }
+            
+            /* Giữ màu today, nhưng nếu click chọn thì màu selected sẽ đè lên nhờ !important ở trên */
             tr.is-today td.col-time { background-color: #8fd19e !important; border-right: 2px solid #0f5132 !important; }
         }
 
@@ -157,9 +146,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V10.5 - ICON FIX PRO
- * - Feature: Added cache busting query parameters and MIME type to icon links.
- * - Logic: Forces browser to re-fetch the icon by appending version string.
+ * AI SUPER-SCHEDULER V10.6 - TAP TO HIGHLIGHT
+ * - Feature: Tap/Click on any row to highlight it (Orange/Yellow).
+ * - Logic: Added event listeners to table rows to toggle 'row-selected' class.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -201,9 +190,7 @@ const App = {
         const mapDay = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
         const todayIndex = new Date().getDay(); 
         const todayLabel = mapDay[todayIndex];
-
         const btn = document.querySelector(`.filter-btn[data-day="${todayLabel}"]`);
-        
         if (btn) {
             this.setDayFilter(todayLabel, btn);
         } else {
@@ -402,6 +389,17 @@ const App = {
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('main-table').style.display = 'block';
             
+            // --- THÊM SỰ KIỆN CLICK CHO DÒNG ---
+            const tableRows = document.querySelectorAll('table.custom-schedule tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('click', function() {
+                    // Bỏ chọn tất cả dòng khác
+                    tableRows.forEach(r => r.classList.remove('row-selected'));
+                    // Chọn dòng hiện tại
+                    this.classList.add('row-selected');
+                });
+            });
+
             this.filterTable();
             
             setTimeout(() => {
