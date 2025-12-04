@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lịch Công Tác BHS - V10.0 ULTRA WIDE</title>
+    <title>Lịch Công Tác BHS - V10.1 MOBILE FIXED</title>
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4472C4">
     <link rel="apple-touch-icon" href="https://drive.google.com/uc?export=download&id=16GLGOJ6r9kM9qEtkCdTiRpvDNDUksuQI">
@@ -17,11 +17,11 @@
             font-family: 'Google Sans', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
             width: 100%; 
-            max-width: 100%; /* Gỡ bỏ giới hạn 1400px */
+            max-width: 100%;
             box-sizing: border-box; 
             color: #333; 
             background: white; 
-            padding: 15px; /* Padding vừa đủ thoáng */
+            padding: 15px; 
             min-height: 100vh;
         }
         
@@ -59,25 +59,28 @@
             box-shadow: 0 4px 10px rgba(60, 100, 193, 0.4);
         }
         
-        /* TABLE STYLES - FULL WIDTH OPTIMIZATION */
+        /* TABLE STYLES */
         .table-responsive { 
             overflow: auto; 
-            max-height: 80vh; /* Tăng chiều cao hiển thị */
+            max-height: 85vh; /* Tăng chiều cao tối đa cho mobile */
             border: 1px solid #e0e0e0; 
             border-radius: 12px; 
             position: relative; 
             display: none; 
             scrollbar-width: thin;
             box-shadow: 0 0 20px rgba(0,0,0,0.05);
+            /* Quan trọng cho iOS scroll mượt */
+            -webkit-overflow-scrolling: touch; 
         }
         
         table.custom-schedule { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1000px; font-size: 15px; background-color: white; }
         
-        /* STICKY HEADER */
+        /* STICKY HEADER - DESKTOP DEFAULT */
         table.custom-schedule thead th { 
             background: linear-gradient(180deg, #4472C4 0%, #365da3 100%); color: #ffffff !important; 
             padding: 18px 15px; text-align: center; border-right: 1px solid rgba(255,255,255,0.2); 
-            white-space: nowrap; font-weight: 800; text-transform: uppercase; position: sticky; top: 0; z-index: 30; vertical-align: middle;
+            white-space: nowrap; font-weight: 800; text-transform: uppercase; 
+            position: sticky; top: 0; z-index: 30; vertical-align: middle; /* Z-index gốc */
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
@@ -87,32 +90,63 @@
             transition: background-color 0.2s;
         }
 
-        /* AI UPGRADE: ROW HOVER EFFECT (Giúp dễ nhìn trên màn hình rộng) */
         table.custom-schedule tbody tr:hover td { background-color: #f1f8ff; }
 
         .col-hidden { display: none !important; }
         .col-thu { min-width: 90px !important; text-align: center; font-weight: 700 !important; color: #1565c0 !important; }
 
-        /* STICKY COLUMNS */
+        /* STICKY COLUMNS - DESKTOP */
         table.custom-schedule td.col-sticky-date { 
             background-color: #f8fbff; font-weight: 700; text-align: center; color: #1565c0; 
             position: sticky; left: 0; z-index: 10; border-right: 2px solid #b0bec5; 
         }
-        /* Fix hover đè lên màu nền sticky */
         table.custom-schedule tbody tr:hover td.col-sticky-date { background-color: #e3f2fd; }
 
         table.custom-schedule td.col-time { 
             font-weight: 700; text-align: center; white-space: nowrap; color: #c62828; background-color: #fffafa; 
         }
 
-        /* MOBILE LOGIC */
+        /* --- MOBILE LOGIC (FIX HEADER & COLUMN) --- */
         @media screen and (max-width: 768px) {
-            #schedule-container { padding: 10px; } /* Padding nhỏ hơn trên mobile */
+            #schedule-container { padding: 8px; }
             .schedule-header h2 { font-size: 20px; margin-bottom: 15px; }
             
-            table.custom-schedule td.col-sticky-date, table.custom-schedule th.col-sticky-date { position: static !important; z-index: 1 !important; border-right: 1px solid #e0e0e0 !important; }
-            table.custom-schedule td.col-time, table.custom-schedule th.col-time { position: sticky !important; left: 0 !important; z-index: 25 !important; border-right: 2px solid #888 !important; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
-            tr.is-today td.col-time { background-color: #8fd19e !important; color: #000 !important; border-right: 2px solid #0f5132 !important; }
+            /* 1. Reset cột Ngày (Không sticky trên mobile nữa để tiết kiệm chỗ) */
+            table.custom-schedule td.col-sticky-date, table.custom-schedule th.col-sticky-date { 
+                position: static !important; z-index: 1 !important; border-right: 1px solid #e0e0e0 !important; 
+            }
+            
+            /* 2. Cố định Cột Thời Gian (Body) - Z-Index 25 */
+            table.custom-schedule td.col-time { 
+                position: sticky !important; left: 0 !important; z-index: 25 !important; 
+                border-right: 2px solid #888 !important; 
+                box-shadow: 2px 0 5px rgba(0,0,0,0.15); 
+            }
+
+            /* 3. Cố định HEADER (Toàn bộ hàng) - Z-Index 40 (Cao hơn cột thời gian body) */
+            table.custom-schedule thead th {
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 40 !important;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* Bóng đổ đậm hơn để phân cách */
+                border-bottom: 2px solid #2b4f94;
+            }
+
+            /* 4. Xử lý Ô GIAO NHAU (Header của cột Thời gian) - Z-Index 50 (Cao nhất) */
+            table.custom-schedule thead th.col-time {
+                position: sticky !important;
+                left: 0 !important;
+                top: 0 !important;
+                z-index: 50 !important; /* Đè lên tất cả */
+                border-right: 2px solid #fff !important;
+                background-color: #365da3 !important; /* Đảm bảo màu nền đè lên */
+            }
+
+            /* Màu nền đặc biệt cho dòng hôm nay trên mobile */
+            tr.is-today td.col-time { 
+                background-color: #8fd19e !important; color: #000 !important; 
+                border-right: 2px solid #0f5132 !important; 
+            }
         }
 
         /* TODAY HIGHLIGHT */
@@ -155,9 +189,9 @@
 
 <script>
 /**
- * AI SUPER-SCHEDULER V10.0 - ULTRA WIDE EDITION
- * - Feature: Full Screen Layout (Removed max-width).
- * - Logic: Improved column detection & Row Highlighting for wide screens.
+ * AI SUPER-SCHEDULER V10.1 - MOBILE HEADER FIX
+ * - Feature: Force Sticky Header on Mobile with Z-Index Optimization.
+ * - Logic: Improved handling of intersection between sticky row and sticky column.
  */
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbysvLenfsJak8UG4UHJfqBG1Kao-VFHVQgJ3MlK6V4VvZi0hGP6wMNEGs0Gk7DOJMiDig/exec'; 
@@ -358,6 +392,7 @@ const App = {
                 let extraClass = '';
                 if (i === idxNgay) extraClass += ' col-sticky-date'; 
                 if (i === idxThu) extraClass += ' col-thu';
+                if (i === idxTime) extraClass += ' col-time'; /* Thêm class cho header thời gian */
                 
                 return `<th class="${extraClass}" style="${displayStyle}">${h}</th>`;
             }).join('');
